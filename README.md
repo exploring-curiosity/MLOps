@@ -46,7 +46,7 @@ conditions under which it may be used. -->
 
 |              | How it was created | Conditions of use |
 |--------------|--------------------|-------------------|
-| Data set 1   |                    |                   |
+| BirdClef 25  |                    |                   |
 | Data set 2   |                    |                   |
 | Base model 1 |                    |                   |
 | etc          |                    |                   |
