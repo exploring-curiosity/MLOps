@@ -88,5 +88,18 @@ optional "difficulty" points you are attempting. -->
 
 #### Continuous X
 
-<!-- Make sure to clarify how you will satisfy the Unit 3 requirements,  and which 
-optional "difficulty" points you are attempting. -->
+Since the Lab for DevOps is yet to be released, the following points are based on the lecture notes and project requirements : 
+1. The aim to setup a pipleine where in any changes to the model made should be available to the end user automatically. 
+2. In Continous X, we will create scripts that would deploy services in the cloud for deployment, like Compute Instances, Security groups etc. Any resource that has to be provisioned, will be done using scripts, like Terraform or Python. 
+3. The end service and the model would exist in their separate microservices which would be containerized. 
+4. This pipeline will : 
+    4.1 Could be triggered automatically or manually. 
+    4.2 Will re-train the model. 
+    4.3 Run the complete offline evaluation suite. 
+    4.4 Apply the post-training optimizations for serving. 
+    4.5 Test its integration with the overall service. 
+    4.6 Package it inside a container for the deployment environment
+    4.7 deploy it to a staging area for further testing
+5. Once the artifacts are moved into the staging area, and once everything is working fine, we should be able to promote
+    to higher environments. 
+6. Will learn more about the CI/CD once the Lab3 is released and can update this part again. 
