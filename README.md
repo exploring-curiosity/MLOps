@@ -4,48 +4,45 @@
 
 This project proposes a machine learning system, "El Silencio Acoustic Explorer," designed for integration into the existing services of Ecotour Operators in the El Silencio Natural Reserve.
 
-* **Value Proposition:** The system provides an API endpoint that can be integrated into a mobile application (app development is outside the project scope). This allows tour guides and tourists to get real-time identifications of vocalizing fauna (birds, amphibians, mammals, insects) detected in audio recordings. This enhances the existing tour service by revealing hidden biodiversity, increasing customer engagement and education, empowering guides, and offering a unique selling proposition.
-* **Non-ML Status Quo:** Currently, fauna identification relies solely on visual spotting and the variable acoustic identification skills of the human guide. Many species, particularly those primarily identified by sound, are missed, and identifications can be uncertain.
-* **Project Success Metric (Proxy for Business Value):** As direct business metrics (e.g., customer satisfaction, booking rates) are not measurable within this project's scope, the primary success metric will be the **Mean Average Precision (mAP)** achieved by the species classification model. This will be evaluated on a diverse, curated test set representative of the soundscapes found in El Silencio (covering different species, noise levels, and times of day). High mAP directly reflects the system's core capability to accurately identify a wide range of species, which is fundamental to delivering the intended value proposition of revealing hidden biodiversity during tours.
+- **Value Proposition:** The system provides an API endpoint that can be integrated into a mobile application (app development is outside the project scope). This allows tour guides and tourists to get real-time identifications of vocalizing fauna (birds, amphibians, mammals, insects) detected in audio recordings. This enhances the existing tour service by revealing hidden biodiversity, increasing customer engagement and education, empowering guides, and offering a unique selling proposition.
+- **Non-ML Status Quo:** Currently, fauna identification relies solely on visual spotting and the variable acoustic identification skills of the human guide. Many species, particularly those primarily identified by sound, are missed, and identifications can be uncertain.
+- **Project Success Metric (Proxy for Business Value):** As direct business metrics (e.g., customer satisfaction, booking rates) are not measurable within this project's scope, the primary success metric will be the **Mean Average Precision (mAP)** achieved by the species classification model. This will be evaluated on a diverse, curated test set representative of the soundscapes found in El Silencio (covering different species, noise levels, and times of day). High mAP directly reflects the system's core capability to accurately identify a wide range of species, which is fundamental to delivering the intended value proposition of revealing hidden biodiversity during tours.
 
 ## Contributors
 
-| Name                      | Responsible for                         | Link to their commits in this repo |
-| :------------------------ | :-------------------------------------- | :--------------------------------- |
-| Sudharshan Ramesh         | *Model training and training platforms* |                                    |
-| Vaishnavi Deshmukh        | *Data pipeline*                         |                                    |
-| Mohammad Hamid            | *Continuous X CI/CD*                    |                                    |
-| Harish Balaji Boominathan | *Model serving and monitoring platforms*|                                    |
-
-
+| Name                      | Responsible for                          | Link to their commits in this repo |
+| :------------------------ | :--------------------------------------- | :--------------------------------- |
+| Sudharshan Ramesh         | _Model training and training platforms_  |                                    |
+| Vaishnavi Deshmukh        | _Data pipeline_                          |                                    |
+| Mohammad Hamid            | _Continuous X CI/CD_                     |                                    |
+| Harish Balaji Boominathan | _Model serving and monitoring platforms_ |                                    |
 
 ### System diagram
 
-<!-- Overall digram of system. Doesn't need polish, does need to show all the pieces. 
-Must include: all the hardware, all the containers/software platforms, all the models, 
+<!-- Overall digram of system. Doesn't need polish, does need to show all the pieces.
+Must include: all the hardware, all the containers/software platforms, all the models,
 all the data. -->
 
 ### Summary of outside materials
 
-| Resource                     | How it was created                                                                                                                                                                                                                                                                                                                                                                                    | Conditions of use                                                                                                                                                                                                                                                                                                                                                                  |
-| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Data set 1:** BirdCLEF 2025 (El Silencio Focus) | Dataset provided via Kaggle for the BirdCLEF 2025 competition. Focuses on El Silencio Natural Reserve, Colombia. Includes: <br> - `train_audio/`: Short labeled recordings (primary/secondary labels for 206 species: birds, amphibians, mammals, insects) from Xeno-canto, iNaturalist, CSA. 32kHz OGG format. **(7.82 GB)**. Metadata in `train.csv`. <br> - `train_soundscapes/`: Unlabeled 1-minute soundscapes from El Silencio. 32kHz OGG format. **(4.62 GB)**. <br> **Total provided training/unlabeled data (`train_audio` + `train_soundscapes`) is approx. 12.5 GB.** | License: **CC BY-NC-SA 4.0**. For research purposes: Requires attribution (BY), prohibits commercial use (NC), and requires adaptations be shared under the same license (SA). Suitable for non-commercial academic research. |
-| **Base model 1:** Pre-trained SED Model: PANNs (CNN14 variant) | PANNs (Large-Scale Pretrained Audio Neural Networks) by Kong et al. (2020). Trained on AudioSet. CNN14 architecture. Paper: [https://arxiv.org/abs/1912.10211](https://arxiv.org/abs/1912.10211), Code/Weights: [https://github.com/qiuqiangkong/audioset_tagging_cnn](https://github.com/qiuqiangkong/audioset_tagging_cnn)                                               | License: **MIT License** (as per linked repository). Permits reuse, modification, distribution, and sublicensing for both private and commercial purposes, provided the original copyright and license notice are included. Suitable for research use.                                                                                                                       |
-| **Base model 2:** EfficientNet-B0 | Developed by Google Research (Tan & Le, 2019). Pre-trained on ImageNet. Smallest variant (\~5.3M parameters). Paper: [https://arxiv.org/abs/1905.11946](https://arxiv.org/abs/1905.11946)                                                                                                                                                                                                          | Apache 2.0 License. Pre-trained weights available. Will be **fine-tuned** on `train_audio` (Mel spectrograms) for the 206-species classification task.                                                                                                                                                                                                            |
-| **Base model 3:** Google Perch (Bird Vocalization Classifier) | Developed by Google Research. Pre-trained on bird sounds. Available on Kaggle Models under the name "Perch". [https://www.kaggle.com/models/google/bird-vocalization-classifier](https://www.kaggle.com/models/google/bird-vocalization-classifier). Model details/parameters may vary by version. **Applicability to non-bird species requires careful evaluation.** | **Apache 2.0 License** (as per Kaggle model details). Will be **fine-tuned** (if possible) or used for **feature extraction** on `train_audio` data. Performance impact on non-bird classes (mammals, amphibians, insects) must be assessed.                                                                                                                      |
-| **Architecture 4:** ResNet-50 | Architecture by Microsoft Research (He et al., 2015). (\~25.6M parameters). Paper: [https://arxiv.org/abs/1512.03385](https://arxiv.org/abs/1512.03385)                                                                                                                                                                                                                                              | Architecture well-established. Will be **trained from scratch** on `train_audio` (Mel spectrograms) for the 206-species classification task. No ImageNet pre-training used. Fulfills "train from scratch" requirement.                                                                                                                                            |
-| **Tool:** Ray                  | Open-source framework for distributed computing. [https://www.ray.io/](https://www.ray.io/)                                                                                                                                                                                                              | Apache 2.0 License. Used for scheduling training jobs and distributed training on Chameleon.                                                                                                                                                     |
-| **Tool:** MLflow               | Open-source platform for MLOps. [https://mlflow.org/](https://mlflow.org/)                                                                                                                                                                                                                              | Apache 2.0 License. Will be self-hosted on Chameleon for experiment tracking.                                                                                                                                                                     |
-
+| Resource                                                       | How it was created                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Conditions of use                                                                                                                                                                                                                                      |
+| :------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Data set 1:** BirdCLEF 2025 (El Silencio Focus)              | Dataset provided via Kaggle for the BirdCLEF 2025 competition. Focuses on El Silencio Natural Reserve, Colombia. Includes: <br> - `train_audio/`: Short labeled recordings (primary/secondary labels for 206 species: birds, amphibians, mammals, insects) from Xeno-canto, iNaturalist, CSA. 32kHz OGG format. **(7.82 GB)**. Metadata in `train.csv`. <br> - `train_soundscapes/`: Unlabeled 1-minute soundscapes from El Silencio. 32kHz OGG format. **(4.62 GB)**. <br> **Total provided training/unlabeled data (`train_audio` + `train_soundscapes`) is approx. 12.5 GB.** | License: **CC BY-NC-SA 4.0**. For research purposes: Requires attribution (BY), prohibits commercial use (NC), and requires adaptations be shared under the same license (SA). Suitable for non-commercial academic research.                          |
+| **Base model 1:** Pre-trained SED Model: PANNs (CNN14 variant) | PANNs (Large-Scale Pretrained Audio Neural Networks) by Kong et al. (2020). Trained on AudioSet. CNN14 architecture. Paper: [https://arxiv.org/abs/1912.10211](https://arxiv.org/abs/1912.10211), Code/Weights: [https://github.com/qiuqiangkong/audioset_tagging_cnn](https://github.com/qiuqiangkong/audioset_tagging_cnn)                                                                                                                                                                                                                                                     | License: **MIT License** (as per linked repository). Permits reuse, modification, distribution, and sublicensing for both private and commercial purposes, provided the original copyright and license notice are included. Suitable for research use. |
+| **Base model 2:** EfficientNet-B0                              | Developed by Google Research (Tan & Le, 2019). Pre-trained on ImageNet. Smallest variant (\~5.3M parameters). Paper: [https://arxiv.org/abs/1905.11946](https://arxiv.org/abs/1905.11946)                                                                                                                                                                                                                                                                                                                                                                                        | Apache 2.0 License. Pre-trained weights available. Will be **fine-tuned** on `train_audio` (Mel spectrograms) for the 206-species classification task.                                                                                                 |
+| **Base model 3:** Google Perch (Bird Vocalization Classifier)  | Developed by Google Research. Pre-trained on bird sounds. Available on Kaggle Models under the name "Perch". [https://www.kaggle.com/models/google/bird-vocalization-classifier](https://www.kaggle.com/models/google/bird-vocalization-classifier). Model details/parameters may vary by version. **Applicability to non-bird species requires careful evaluation.**                                                                                                                                                                                                            | **Apache 2.0 License** (as per Kaggle model details). Will be **fine-tuned** (if possible) or used for **feature extraction** on `train_audio` data. Performance impact on non-bird classes (mammals, amphibians, insects) must be assessed.           |
+| **Architecture 4:** ResNet-50                                  | Architecture by Microsoft Research (He et al., 2015). (\~25.6M parameters). Paper: [https://arxiv.org/abs/1512.03385](https://arxiv.org/abs/1512.03385)                                                                                                                                                                                                                                                                                                                                                                                                                          | Architecture well-established. Will be **trained from scratch** on `train_audio` (Mel spectrograms) for the 206-species classification task. No ImageNet pre-training used. Fulfills "train from scratch" requirement.                                 |
+| **Tool:** Ray                                                  | Open-source framework for distributed computing. [https://www.ray.io/](https://www.ray.io/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Apache 2.0 License. Used for scheduling training jobs and distributed training on Chameleon.                                                                                                                                                           |
+| **Tool:** MLflow                                               | Open-source platform for MLOps. [https://mlflow.org/](https://mlflow.org/)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Apache 2.0 License. Will be self-hosted on Chameleon for experiment tracking.                                                                                                                                                                          |
 
 ### Summary of infrastructure requirements
 
-<!-- Itemize all your anticipated requirements: What (`m1.medium` VM, `gpu_mi100`), 
-how much/when, justification. Include compute, floating IPs, persistent storage. 
+<!-- Itemize all your anticipated requirements: What (`m1.medium` VM, `gpu_mi100`),
+how much/when, justification. Include compute, floating IPs, persistent storage.
 The table below shows an example, it is not a recommendation. -->
 
 | Requirement     | How many/when                                     | Justification |
-|-----------------|---------------------------------------------------|---------------|
+| --------------- | ------------------------------------------------- | ------------- |
 | `m1.medium` VMs | 3 for entire project duration                     | ...           |
 | `gpu_mi100`     | 4 hour block twice a week                         |               |
 | Floating IPs    | 1 for entire project duration, 1 for sporadic use |               |
@@ -53,8 +50,8 @@ The table below shows an example, it is not a recommendation. -->
 
 ### Detailed design plan
 
-<!-- In each section, you should describe (1) your strategy, (2) the relevant parts of the 
-diagram, (3) justification for your strategy, (4) relate back to lecture material, 
+<!-- In each section, you should describe (1) your strategy, (2) the relevant parts of the
+diagram, (3) justification for your strategy, (4) relate back to lecture material,
 (5) include specific numbers. -->
 
 #### Model training and training platforms
@@ -80,30 +77,130 @@ Meeting the experiment tracking requirement involves deploying and managing our 
 **Requirement 5.2: Scheduling Training Jobs (Ray Cluster)**
 
 To satisfy the job scheduling requirement, our strategy is to use a **Ray cluster** set up on Chameleon infrastructure (e.g., 1 head node, 4 GPU worker nodes). All training tasks, including the ResNet-50 scratch training, fine-tuning scripts, the FSDP distributed training experiments, and the re-training pipeline execution, will be packaged as Python scripts and submitted as jobs to the Ray cluster head using Ray's job submission tools (CLI or SDK). Ray will then manage the scheduling and execution of these jobs on the cluster's worker nodes. This approach is justified as it directly meets the requirement and leverages Ray's capabilities for managing distributed tasks and resources efficiently on the Chameleon cluster, abstracting some underlying complexity. This relates to lecture material on Distributed Computing Frameworks (Ray), Job Scheduling, and Cluster Computing. The specifics involve configuring the Ray cluster and using its job submission interface to launch the training runs for their planned durations (e.g., \~75 epochs, \~30 epochs, 50 epochs for experiments).
+
 #### Model serving and monitoring platforms
 
-<!-- Make sure to clarify how you will satisfy the Unit 6 and Unit 7 requirements, 
+<!-- Make sure to clarify how you will satisfy the Unit 6 and Unit 7 requirements,
 and which optional "difficulty" points you are attempting. -->
 
-#### Data pipeline
+## Data pipeline
 
-<!-- Make sure to clarify how you will satisfy the Unit 8 requirements,  and which 
-optional "difficulty" points you are attempting. -->
+## Table of Contents
+
+1. [Data Pipeline](#data-pipeline)
+   - [Strategy & Relevant Diagram Parts](#strategy--relevant-diagram-parts)
+   - [Justification & Relation to Lecture Material](#justification--relation-to-lecture-material)
+   - [Specific Numbers & Implementation Details](#specific-numbers--implementation-details)
+   - [Difficulty Points Attempted](#difficulty-points-attempted)
+2. [Persistent Storage Justification](#persistent-storage-justification)
+
+## Data Pipeline
+
+### Strategy & Relevant Diagram Parts
+
+Our data strategy centers on robust management of both offline (training) and online (inference) data workflows, utilizing Chameleon's persistent storage as a central repository.
+
+- **Centralized Storage:** Chameleon's persistent storage will serve as the primary data repository, enabling efficient shared access and management of large datasets.
+- **Offline Processing (Batch ETL):** An ETL pipeline will process raw dataset batches, preparing them for model training. This includes feature extraction such as Mel spectrograms.
+- **Online Processing (Simulated Stream):** A simulated pipeline will handle data inference, mimicking real-world streaming conditions.
+- **Feature Consistency:** Ensuring the training and inference features remain identical by centralizing transformation logic and possibly storing processed features in a Feature Store.
+
+### Justification & Relation to Lecture Material
+
+- **Scalability & Collaboration:** Central persistent storage is critical for managing large datasets (~14GB raw) and facilitating team-wide access.
+- **Reproducibility & Structure:** The ETL pipeline ensures structured, repeatable transformations from raw audio to analysis-ready features.
+- **Realism & Testing:** Simulating online data streams allows comprehensive pipeline testing before encountering the hidden test set.
+- **Consistency & Reliability:** Prevents training-serving skew by standardizing feature generation and transformation workflows.
+
+### Specific Numbers & Implementation Details
+
+#### **Persistent Storage:**
+
+- **Requirement:** 100 GB on Chameleon.
+- **Justification:**
+  - Raw data (~14GB)
+  - Processed features (Mel spectrograms, ~20-30GB)
+  - Model artifacts (~10GB)
+  - Container images and logs (~2GB)
+  - Expansion room for experimentation (~44GB for reprocessed or extended datasets)
+- **Mechanism:** Using Chameleon's persistent volume service (implementation dependent on Lab 8).
+
+#### **Offline Data & ETL Pipeline:**
+
+- **Repository Structure:**
+
+  - `raw/`: Contains original `train_audio/`, `train_soundscapes/`, `train.csv`, `taxonomy.csv`
+  - `processed/`: Stores Mel spectrogram features, train-validation split metadata
+  - `models/`: Stores trained model checkpoints
+  - `logs/`: Stores processing and inference logs
+
+- **ETL Steps:** (Implemented via Python scripts using Pandas, Librosa, Scikit-learn):
+
+  1. Extract raw data from Kaggle source to `raw/` directory..
+  2. Transform:
+
+     - Validate data integrity
+     - Load and parse train.csv, taxonomy.csv.
+     - Process audio files: load .ogg files, segment into 5-second chunks, compute Mel spectrograms using consistent parameters (e.g., n_mels, hop_length).
+     - Generate labels for each segment based on train.csv, handling primary/secondary labels.
+     - Create stratified train/validation splits.
+
+  3. Load:
+     - Store processed features and labels into `processed/train` and `processed/validation` directories
+     - Maintain logs (sources, parameters, and output locations) using MLflow
+
+#### **Online Data Simulation & Pipeline:**
+
+- **Simulation Script:**
+
+  - A script will generate simulated online data to test the inference pipeline, acting as the "producer".
+    1. **Source**: It will primarily use files randomly selected from the train_soundscapes/ dataset.
+    2. **Characteristics**:
+       - Format: Generated files will be 1-minute OGG audio files, sampled at 32kHz, matching the expected test set format.
+       - Content: Files will contain ambient sounds recorded in the El Silencio Natural Reserve. As `train_soundscapes` is unlabeled, the presence/absence of target species calls is unknown, realistically mimicking field recordings. This provides authentic background noise and acoustic channel characteristics.
+       - Temporal Behavior: The script will write these files sequentially (e.g., one file every few seconds or minutes, configurable) into a dedicated `online_input/` directory on the persistent storage, simulating a stream or batch arrival of new data.
+       - (Optional Enhancement): To create more challenging test cases with known calls, the script could occasionally overlay short calls (randomly selected from `train_audio/`) onto the `train_soundscapes` background audio before writing the file.
+
+- **Online Inference Pipeline:** This pipeline acts as the "consumer".
+  1. Monitors the `online_input/` directory for new `.ogg` files.
+  2. On new file arrival: Loads the 1-minute `.ogg`.
+  3. Applies the identical segmentation and Mel spectrogram transformation logic used in the offline ETL pipeline to ensure feature consistency.
+  4. Sends the generated features (spectrograms) to the deployed model serving endpoint.
+  5. Receives per-segment predictions (species probabilities).
+  6. Formats the results according to requirements.
+  7. Outputs formatted predictions to an `online_output/` directory (e.g., as a CSV file).
+
+### Difficulty Points Attempted
+
+- **Interactive Data Dashboard:** We will attempt to implement an interactive dashboard using Streamlit or Dash. This dashboard will read from the persistent storage (raw/ metadata, processed/ features) to provide visualizations of data distributions (species, quality ratings), sample waveforms/spectrograms, and potentially data quality metrics, aiding team insight.
+
+## Persistent Storage Justification
+
+To accommodate our dataset and processing requirements, we request **100 GB of persistent storage** on Chameleon. Our justification includes:
+
+- **Raw dataset storage (~14 GB)**: The provided dataset includes train_audio and train_soundscapes in OGG format.
+- **Processed features (~30-50 GB)**: Mel spectrograms and extracted features (depending on resolution and augmentation strategies.)
+- **Model artifacts (~10-15 GB)**: Checkpoints and model weights from fine-tuned and scratch-trained architectures, and hyperparameter search logs require substantial space.
+- **Container images & logs (~5-10 GB)**: Experiment tracking logs (MLflow, evaluation outputs), and online simulation files.
+- **Expansion buffer**: Additional space ensures flexibility for future feature extraction methods, dataset augmentation, debugging, and computational overhead.
+
+By implementing structured data management and efficient storage strategies, this allocation ensures smooth execution of both training and inference pipelines without bottlenecks.
 
 #### Continuous X
 
-Since the Lab for DevOps is yet to be released, the following points are based on the lecture notes and project requirements : 
-1. The aim to setup a pipleine where in any changes to the model made should be available to the end user automatically. 
-2. In Continous X, we will create scripts that would deploy services in the cloud for deployment, like Compute Instances, Security groups etc. Any resource that has to be provisioned, will be done using scripts, like Terraform or Python. 
-3. The end service and the model would exist in their separate microservices which would be containerized. 
-4. This pipeline will : 
-    4.1 Could be triggered automatically or manually. 
-    4.2 Will re-train the model. 
-    4.3 Run the complete offline evaluation suite. 
-    4.4 Apply the post-training optimizations for serving. 
-    4.5 Test its integration with the overall service. 
-    4.6 Package it inside a container for the deployment environment
-    4.7 deploy it to a staging area for further testing
+Since the Lab for DevOps is yet to be released, the following points are based on the lecture notes and project requirements :
+
+1. The aim to setup a pipleine where in any changes to the model made should be available to the end user automatically.
+2. In Continous X, we will create scripts that would deploy services in the cloud for deployment, like Compute Instances, Security groups etc. Any resource that has to be provisioned, will be done using scripts, like Terraform or Python.
+3. The end service and the model would exist in their separate microservices which would be containerized.
+4. This pipeline will :
+   4.1 Could be triggered automatically or manually.
+   4.2 Will re-train the model.
+   4.3 Run the complete offline evaluation suite.
+   4.4 Apply the post-training optimizations for serving.
+   4.5 Test its integration with the overall service.
+   4.6 Package it inside a container for the deployment environment
+   4.7 deploy it to a staging area for further testing
 5. Once the artifacts are moved into the staging area, and once everything is working fine, we should be able to promote
-    to higher environments. 
-6. Will learn more about the CI/CD once the Lab3 is released and can update this part again. 
+   to higher environments.
+6. Will learn more about the CI/CD once the Lab3 is released and can update this part again.
