@@ -80,8 +80,87 @@ To satisfy the job scheduling requirement, our strategy is to use a **Ray cluste
 
 #### Model serving and monitoring platforms
 
-<!-- Make sure to clarify how you will satisfy the Unit 6 and Unit 7 requirements,
-and which optional "difficulty" points you are attempting. -->
+
+This section outlines the plan to satisfy Unit 6 and Unit 7 requirements.
+
+#### Unit 6: Model Serving
+
+#### Requirement 6.1: Serving from an API Endpoint
+Our strategy involves exposing the final ensemble model (ResNet-50, EfficientNet-B0, and Google Bird Classifier with PANNs features) through a FastAPI endpoint. This API will be deployed on a cloud-based GPU server using a containerized microservice architecture. We support both PyTorch and ONNX runtime endpoints, switching to ONNX for performance-critical deployments. The API accepts base64-encoded `.ogg` audio clips (or extracted Mel spectrograms) and returns a multi-label prediction of species along with confidence scores. This aligns directly with the real-time use case for tour guides and tourists in El Silencio.
+
+#### Requirement 6.2: Identify Requirements (Latency, Throughput, Concurrency)
+Our target requirements are informed by the mobile tour guide use case:
+- **Model Size**: ≤ 25MB (with quantized ONNX models).
+- **Latency (Online Inference)**: < 200ms median latency on GPU-based cloud inference, including preprocessing of a 5-second `.ogg` clip.
+- **Throughput (Batch Inference)**: ≥ 200 frames/sec on CPU, ≥ 1000 frames/sec on GPU.
+- **Concurrency**: Support at least 8 concurrent users per node with latency < 300ms (95th percentile).
+
+#### Requirement 6.3: Model Optimizations to Satisfy Requirements
+We apply several model-level optimizations:
+- **Graph Optimizations**: Using ONNX Runtime’s extended optimization level.
+- **Quantization**: Applying both dynamic and static post-training quantization with Intel Neural Compressor.
+- **Model Compilation**: TorchScript for PyTorch models and optimized ONNX sessions.
+- **Hardware-Specific Execution Providers**: CUDA (GPU), OpenVINO (CPU), and TensorRT (optimized GPU).
+
+Each variant is benchmarked on Chameleon cloud nodes. Performance metrics (latency, throughput, model size) are logged to MLflow.
+
+#### Requirement 6.4: System Optimizations to Satisfy Requirements
+To maintain low latency under concurrent access, we apply system-level strategies using Triton Inference Server:
+- **Dynamic Batching**: Batch sizes 4–16.
+- **Model Replica Management**: Multiple instances per GPU node.
+- **Resource Monitoring**: `nvidia-smi` and Prometheus-Grafana dashboards.
+- **Prioritized Queuing**: Queue policies to minimize worst-case response times.
+
+#### Extra Difficulty Point: Multiple Options for Serving
+To explore cost-performance tradeoffs, we evaluate three deployment configurations:
+- **Server-grade CPU (AMD EPYC)** with ONNX + OpenVINO backend (target latency < 500ms per clip).
+- **Server-grade GPU (A100)** with ONNX + TensorRT backend (target latency < 200ms per clip).
+- **On-device deployment** with quantized MobileNetV2 (planned for post-project exploration).
+
+We compare accuracy, latency, throughput, and projected cost across these setups to inform production scaling decisions.
+
+---
+
+#### Unit 7: Evaluation and Monitoring
+
+#### Requirement 7.1: Offline Evaluation of Model
+After each training run, we execute an evaluation pipeline that includes:
+1. **Standard Evaluation**: On labeled El Silencio `.ogg` soundscapes.
+2. **Domain-Specific Slices**: Nighttime recordings, low signal-to-noise regions, insect-dominant samples.
+3. **Failure Mode Tests**: Overlapping vocalizations, weak signals, background interference.
+4. **Unit Tests**: Checks for top-K accuracy, coverage, and label frequency.
+
+If a model passes the quality bar (e.g., mAP > 0.5), it is registered in MLflow. Failures trigger retraining.
+
+#### Requirement 7.2: Load Test in Staging
+The FastAPI + Triton stack is deployed to a staging node. We simulate 8 to 32 users using Python benchmarks and Triton’s `perf_analyzer` to record:
+- Median and 95th percentile latency
+- Throughput in predictions/sec
+- GPU and CPU usage trends
+
+This informs autoscaling and concurrency planning.
+
+#### Requirement 7.3: Online Evaluation in Canary
+We simulate different user patterns:
+- **Tour Guide Mode**: Streams 5-second `.ogg` segments.
+- **Power User Mode**: Uploads 1-minute `.ogg` recordings.
+- **Mobile User Mode**: Random upload delays and interruptions.
+
+Manual inspection of predictions evaluates responsiveness, stability, and correctness. Passing the canary test allows promotion to production.
+
+#### Requirement 7.4: Close the Loop
+We implement real-world feedback mechanisms:
+- **User Feedback Hook**: App integration will allow guides to flag wrong predictions.
+- **Passive Feedback Logging**: 5% of queries (and their audio) are saved and periodically labeled to support retraining.
+
+#### Requirement 7.5: Business-Specific Evaluation
+Our proxy business metric is:
+- **Species Diversity per Tour Session**: Number of unique species detected in a single outing.
+
+Logged per tour, this serves as a proxy for user engagement and tour value.
+
+
+
 
 ## Data pipeline
 
@@ -204,3 +283,4 @@ Since the Lab for DevOps is yet to be released, the following points are based o
 5. Once the artifacts are moved into the staging area, and once everything is working fine, we should be able to promote
    to higher environments.
 6. Will learn more about the CI/CD once the Lab3 is released and can update this part again.
+
