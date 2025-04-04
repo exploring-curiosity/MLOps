@@ -4,9 +4,57 @@
 
 This project proposes a machine learning system, "El Silencio Acoustic Explorer," designed for integration into the existing services of Ecotour Operators in the El Silencio Natural Reserve.
 
-- **Value Proposition:** The system provides an API endpoint that can be integrated into a mobile application (app development is outside the project scope). This allows tour guides and tourists to get real-time identifications of vocalizing fauna (birds, amphibians, mammals, insects) detected in audio recordings. This enhances the existing tour service by revealing hidden biodiversity, increasing customer engagement and education, empowering guides, and offering a unique selling proposition.
-- **Non-ML Status Quo:** Currently, fauna identification relies solely on visual spotting and the variable acoustic identification skills of the human guide. Many species, particularly those primarily identified by sound, are missed, and identifications can be uncertain.
-- **Project Success Metric (Proxy for Business Value):** As direct business metrics (e.g., customer satisfaction, booking rates) are not measurable within this project's scope, the primary success metric will be the **Mean Average Precision (mAP)** achieved by the species classification model. This will be evaluated on a diverse, curated test set representative of the soundscapes found in El Silencio (covering different species, noise levels, and times of day). High mAP directly reflects the system's core capability to accurately identify a wide range of species, which is fundamental to delivering the intended value proposition of revealing hidden biodiversity during tours.
+## 1. Value Proposition
+
+**"El Silencio Acoustic Explorer"** is a real-time bioacoustic monitoring system designed to enhance the eco-tourism experience within _El Silencio Natural Reserve_. By providing an API endpoint for integration into a mobile application (app development outside this project's scope), our system enables tour guides to instantly identify vocalizing fauna (birds, amphibians, mammals, insects) directly from audio recordings captured during tours. This delivers the following benefits:
+
+- **Reveals Hidden Biodiversity:** Uncovers species often missed by visual observation, significantly enriching the tour experience.
+- **Increases Customer Engagement and Education:** Provides real-time information, transforming passive observation into an interactive learning experience.
+- **Empowers Tour Guides:** Equips guides with a powerful tool for accurate and immediate species identification, enhancing their expertise and credibility.
+- **Unique Selling Proposition:** Creates a distinctive and technologically advanced tour offering, attracting a wider range of eco-tourists.
+- **Data Collection for Ecological Studies:** Provides valuable data for ecological studies conducted within the El Silencio Natural Reserve.
+
+### Target Customers
+
+Specifically:
+
+- Local El Silencio Natural Reserve **eco-tour operators** (Conduct local search to add specific business names).
+
+Potential expansion:
+
+- Manakin Nature Tours
+- Colombia Birdwatch
+- Andes EcoTours
+- Selva Verde Lodge & Private Reserve
+
+---
+
+## 2. Non-ML Status Quo
+
+Currently, fauna identification in El Silencio Natural Reserve tours relies heavily on:
+
+- **Visual Spotting:** Limited to species that are easily visible, missing many nocturnal or elusive species.
+- **Human Guide Acoustic Skills:** Subjective and variable accuracy, leading to missed identifications and uncertainty.
+- **Manual Reference Books:** Inefficient and not real time.
+
+This results in an incomplete and potentially inaccurate portrayal of the reserve's biodiversity, limiting the educational value and customer satisfaction.
+
+---
+
+## 3. Project Success Metrics
+
+### **Primary Technical Metric (Proxy for Core Capability):**
+
+- **Mean Average Precision (mAP):** Target mAP > 0.5  
+  _Justification:_ Directly reflects the model's accuracy in species identification, which is the foundation of the system's value.
+
+### **Secondary Business-Oriented Metrics:**
+
+- **Species Diversity per Tour Session:** Increase the average number of identified species per tour by _X%_ (e.g., 20%) compared to pre-implementation baseline data.
+- **Customer Engagement Metrics (Proxy):** Increase app usage time and interaction frequency during tours.
+- **Tour Guide Proficiency Enhancement (Qualitative):** Document positive feedback from tour guides regarding the system's usability and effectiveness.
+- **New Tour Offering Differentiation:** Document positive feedback regarding the system's contribution to a unique selling proposition.
+- **Data Collection for Ecological Studies:** Document the amount of species data collected.
 
 ## Contributors
 
@@ -100,23 +148,27 @@ This section details the plan to satisfy Unit 4 and Unit 5 requirements, incorpo
 
 #### Model serving and monitoring platforms
 
-
 This section outlines the plan to satisfy Unit 6 and Unit 7 requirements.
 
 #### Unit 6: Model Serving
 
 #### Requirement 6.1: Serving from an API Endpoint
+
 Our strategy involves exposing the final ensemble model (ResNet-50, EfficientNet-B0, and Google Bird Classifier with PANNs features) through a FastAPI endpoint. This API will be deployed on a cloud-based GPU server using a containerized microservice architecture. We support both PyTorch and ONNX runtime endpoints, switching to ONNX for performance-critical deployments. The API accepts base64-encoded `.ogg` audio clips (or extracted Mel spectrograms) and returns a multi-label prediction of species along with confidence scores. This aligns directly with the real-time use case for tour guides and tourists in El Silencio.
 
 #### Requirement 6.2: Identify Requirements (Latency, Throughput, Concurrency)
+
 Our target requirements are informed by the mobile tour guide use case:
+
 - **Model Size**: ≤ 25MB (with quantized ONNX models).
 - **Latency (Online Inference)**: < 200ms median latency on GPU-based cloud inference, including preprocessing of a 5-second `.ogg` clip.
 - **Throughput (Batch Inference)**: ≥ 200 frames/sec on CPU, ≥ 1000 frames/sec on GPU.
 - **Concurrency**: Support at least 8 concurrent users per node with latency < 300ms (95th percentile).
 
 #### Requirement 6.3: Model Optimizations to Satisfy Requirements
+
 We apply several model-level optimizations:
+
 - **Graph Optimizations**: Using ONNX Runtime’s extended optimization level.
 - **Quantization**: Applying both dynamic and static post-training quantization with Intel Neural Compressor.
 - **Model Compilation**: TorchScript for PyTorch models and optimized ONNX sessions.
@@ -125,14 +177,18 @@ We apply several model-level optimizations:
 Each variant is benchmarked on Chameleon cloud nodes. Performance metrics (latency, throughput, model size) are logged to MLflow.
 
 #### Requirement 6.4: System Optimizations to Satisfy Requirements
+
 To maintain low latency under concurrent access, we apply system-level strategies using Triton Inference Server:
+
 - **Dynamic Batching**: Batch sizes 4–16.
 - **Model Replica Management**: Multiple instances per GPU node.
 - **Resource Monitoring**: `nvidia-smi` and Prometheus-Grafana dashboards.
 - **Prioritized Queuing**: Queue policies to minimize worst-case response times.
 
 #### Extra Difficulty Point: Multiple Options for Serving
+
 To explore cost-performance tradeoffs, we evaluate three deployment configurations:
+
 - **Server-grade CPU (AMD EPYC)** with ONNX + OpenVINO backend (target latency < 500ms per clip).
 - **Server-grade GPU (A100)** with ONNX + TensorRT backend (target latency < 200ms per clip).
 - **On-device deployment** with quantized MobileNetV2 (planned for post-project exploration).
@@ -144,7 +200,9 @@ We compare accuracy, latency, throughput, and projected cost across these setups
 #### Unit 7: Evaluation and Monitoring
 
 #### Requirement 7.1: Offline Evaluation of Model
+
 After each training run, we execute an evaluation pipeline that includes:
+
 1. **Standard Evaluation**: On labeled El Silencio `.ogg` soundscapes.
 2. **Domain-Specific Slices**: Nighttime recordings, low signal-to-noise regions, insect-dominant samples.
 3. **Failure Mode Tests**: Overlapping vocalizations, weak signals, background interference.
@@ -153,7 +211,9 @@ After each training run, we execute an evaluation pipeline that includes:
 If a model passes the quality bar (e.g., mAP > 0.5), it is registered in MLflow. Failures trigger retraining.
 
 #### Requirement 7.2: Load Test in Staging
+
 The FastAPI + Triton stack is deployed to a staging node. We simulate 8 to 32 users using Python benchmarks and Triton’s `perf_analyzer` to record:
+
 - Median and 95th percentile latency
 - Throughput in predictions/sec
 - GPU and CPU usage trends
@@ -161,7 +221,9 @@ The FastAPI + Triton stack is deployed to a staging node. We simulate 8 to 32 us
 This informs autoscaling and concurrency planning.
 
 #### Requirement 7.3: Online Evaluation in Canary
+
 We simulate different user patterns:
+
 - **Tour Guide Mode**: Streams 5-second `.ogg` segments.
 - **Power User Mode**: Uploads 1-minute `.ogg` recordings.
 - **Mobile User Mode**: Random upload delays and interruptions.
@@ -169,20 +231,21 @@ We simulate different user patterns:
 Manual inspection of predictions evaluates responsiveness, stability, and correctness. Passing the canary test allows promotion to production.
 
 #### Requirement 7.4: Close the Loop
+
 We implement real-world feedback mechanisms:
+
 - **User Feedback Hook**: App integration will allow guides to flag wrong predictions.
 - **Passive Feedback Logging**: 5% of queries (and their audio) are saved and periodically labeled to support retraining.
 
 #### Requirement 7.5: Business-Specific Evaluation
+
 Our proxy business metric is:
+
 - **Species Diversity per Tour Session**: Number of unique species detected in a single outing.
 
 Logged per tour, this serves as a proxy for user engagement and tour value.
 
-
-
-
-## Data pipeline
+<!-- ## Data pipeline
 
 ## Table of Contents
 
@@ -191,7 +254,7 @@ Logged per tour, this serves as a proxy for user engagement and tour value.
    - [Justification & Relation to Lecture Material](#justification--relation-to-lecture-material)
    - [Specific Numbers & Implementation Details](#specific-numbers--implementation-details)
    - [Difficulty Points Attempted](#difficulty-points-attempted)
-2. [Persistent Storage Justification](#persistent-storage-justification)
+2. [Persistent Storage Justification](#persistent-storage-justification) -->
 
 ## Data Pipeline
 
@@ -303,4 +366,3 @@ Since the Lab for DevOps is yet to be released, the following points are based o
 5. Once the artifacts are moved into the staging area, and once everything is working fine, we should be able to promote
    to higher environments.
 6. Will learn more about the CI/CD once the Lab3 is released and can update this part again.
-
