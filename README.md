@@ -69,7 +69,7 @@ This results in an incomplete and potentially inaccurate portrayal of the reserv
 
 ### System diagram
 
-<img src="assets/ELSilencioAcousticExplorerSysArch.png" width="400"/>
+<img src="assets/ELSilencioAcousticExplorerSysArch.png" width="800"/>
 
 ### Summary of outside materials
 
