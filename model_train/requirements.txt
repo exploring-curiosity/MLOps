@@ -1,0 +1,12 @@
+torch
+librosa
+numpy
+matplotlib
+soundfile
+scikit-learn
+noisereduce
+panns-inference
+ipython
+loralib
+peft
+timm
