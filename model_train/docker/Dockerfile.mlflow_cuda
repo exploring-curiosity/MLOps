@@ -1,5 +1,21 @@
 FROM quay.io/jupyter/pytorch-notebook:cuda12-latest
 
+USER root
+
+# 1) add NVIDIA's apt repo (for cuDNN)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      curl gnupg2 ca-certificates \
+  && curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub \
+      | apt-key add - \
+  && echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" \
+      > /etc/apt/sources.list.d/cuda.list
+
+# 2) install cuDNN 9.3 (adjust the package name if yours is slightly different)
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+      cuda-cudnn-9-3 \
+  && rm -rf /var/lib/apt/lists/*
+
 USER ${NB_UID}
 
 # Install MLFlow and pynvml library used by MLFlow for monitoring NVIDIA GPU
