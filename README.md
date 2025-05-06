@@ -366,3 +366,6 @@ Since the Lab for DevOps is yet to be released, the following points are based o
 5. Once the artifacts are moved into the staging area, and once everything is working fine, we should be able to promote
    to higher environments.
 6. Will learn more about the CI/CD once the Lab3 is released and can update this part again.
+
+
+
