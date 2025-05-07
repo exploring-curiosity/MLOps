@@ -34,10 +34,12 @@ cat > ~/.config/rclone/rclone.conf <<EOF
 [chi_uc]
 type = swift
 user_id = $RCLONE_CONFIG_CHI_UC_USER_ID
-userapplication_credential_id = $RCLONE_CONFIG_CHI_UC_USER
-application_credential_secret = $RCLONE_CONFIG_CHI_UC_KEY
+user = $RCLONE_CONFIG_CHI_UC_USER
+key = $RCLONE_CONFIG_CHI_UC_KEY
 auth = https://chi.uc.chameleoncloud.org:5000/v3
 region = CHI@UC
+auth_version = 3
+storage_url = https://objects.chi.uc.chameleoncloud.org/v1/AUTH_$RCLONE_PROJECT_ID
 EOF
 
 # Step 4: Test and create container if missing
