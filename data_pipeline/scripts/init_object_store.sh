@@ -33,6 +33,7 @@ mkdir -p ~/.config/rclone
 cat > ~/.config/rclone/rclone.conf <<EOF
 [chi_uc]
 type = swift
+user_id = $RCLONE_CONFIG_CHI_UC_USER_ID
 user = $RCLONE_CONFIG_CHI_UC_USER
 key = $RCLONE_CONFIG_CHI_UC_KEY
 auth = https://chi.uc.chameleoncloud.org:5000/v3
