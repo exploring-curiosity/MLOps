@@ -1,0 +1,95 @@
+version: '3.8'
+
+volumes:
+  birdclef: {}
+
+services:
+
+  extract-data:
+    container_name: etl_extract_data
+    image: python:3.11
+    user: root
+    volumes:
+      - birdclef:/data
+      - ./kaggle:/root/.kaggle:ro
+    working_dir: /data
+    command: >
+      bash -c "
+        set -e
+        echo '[INFO] Resetting dataset directory...'
+        rm -rf birdclef-2025 && mkdir -p birdclef-2025 && cd birdclef-2025
+
+        echo '[INFO] Installing Kaggle CLI...'
+        pip install kaggle --quiet
+
+        echo '[INFO] Downloading BirdCLEF 2025 dataset...'
+        kaggle competitions download -c birdclef-2025
+
+        echo '[INFO] Extracting...'
+        unzip -qq birdclef-2025.zip
+        rm -f birdclef-2025.zip
+
+        echo '[INFO] Extraction complete. Directory contents:'
+        ls -lh /data/birdclef-2025
+      "
+
+  transform-data:
+    container_name: etl_transform_data
+    image: python:3.11
+    volumes:
+      - birdclef:/data
+    working_dir: /data/birdclef-2025
+    command: >
+      bash -c "
+        set -e
+        echo '[INFO] Extracting 10% of most recent train_soundscapes...'
+
+        mkdir -p /data/birdclef-2025/production_sample
+
+        python3 -c '
+import os
+import shutil
+files = sorted(f for f in os.listdir(\"train_soundscapes\") if f.endswith(\".ogg\"))
+subset = files[-(len(files) // 10):]
+for f in subset:
+    src = os.path.join(\"train_soundscapes\", f)
+    dst = os.path.join(\"production_sample\", f)
+    shutil.copyfile(src, dst)
+        '
+
+        echo '[INFO] Sample files:'
+        ls -lh /data/birdclef-2025/production_sample | head -n 10
+      "
+
+  load-data:
+    container_name: etl_load_data
+    image: rclone/rclone:latest
+    volumes:
+      - birdclef:/data
+      - ./config/rclone:/root/.config/rclone:ro
+    entrypoint: /bin/sh
+    command: >
+      -c "
+        if [ -z \"$RCLONE_CONTAINER\" ]; then
+          echo '[ERROR] RCLONE_CONTAINER not set!'
+          exit 1
+        fi
+
+        echo '[INFO] Cleaning existing contents of $RCLONE_CONTAINER...'
+        rclone delete chi_uc:$RCLONE_CONTAINER/raw --rmdirs || true
+
+        echo '[INFO] Uploading train_audio/'
+        rclone copy /data/birdclef-2025/train_audio chi_uc:$RCLONE_CONTAINER/raw/train_audio \
+          --transfers=16 --checkers=8 --fast-list --progress
+
+        echo '[INFO] Uploading metadata'
+        rclone copy /data/birdclef-2025/train.csv chi_uc:$RCLONE_CONTAINER/raw/
+        rclone copy /data/birdclef-2025/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
+
+        echo '[INFO] Uploading 10% soundscape sample'
+        rclone copy /data/birdclef-2025/production_sample chi_uc:$RCLONE_CONTAINER/raw/production/train_soundscapes_subset \
+          --transfers=8 --checkers=4 --progress
+
+        echo '[SUCCESS] Data uploaded!'
+        rclone lsd chi_uc:$RCLONE_CONTAINER
+      "
