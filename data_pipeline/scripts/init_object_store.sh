@@ -25,11 +25,11 @@ sudo mkdir -p /mnt/object
 sudo chown -R cc:cc /mnt/object
 
 # Step 4: Set up rclone env vars for CHI@TACC
-export RCLONE_CONFIG_CHI_TACC_TYPE=swift
-export RCLONE_CONFIG_CHI_TACC_USER=ed13d5dd5ca9493a98fd4627dbbbd44d
-export RCLONE_CONFIG_CHI_TACC_KEY=q_ZZ_UebirprBTCFfSEyg41MvJP8SKhSQhDLq7c-u-qeD6DZKpAvFCY_QfPgUu_7V84XcW3nYEZnbepDAEMBew
-export RCLONE_CONFIG_CHI_TACC_AUTH=https://chi.tacc.chameleoncloud.org:5000/v3
-export RCLONE_CONFIG_CHI_TACC_REGION=CHI@TACC
+export RCLONE_CONFIG_CHI_UC_TYPE=swift
+export RCLONE_CONFIG_CHI_UC_USER=019d1a6fa51a4e35975ac31a6a1aec75
+export RCLONE_CONFIG_CHI_UC_KEY=dxH98yDYRieIf4RthqBH-bXx3r9Ofzfs_zp5qNV_DbhHFqMTRdvpbQBnuN3mBiObaut1bfcAlZkKDHBYTVAhlg
+export RCLONE_CONFIG_CHI_UC_AUTH=https://chi.uc.chameleoncloud.org:5000/v3
+export RCLONE_CONFIG_CHI_UC_REGION=CHI@UC
 
 # Step 5: Create the container if it doesn't already exist
 echo "[INFO] Creating object container if not exists..."
