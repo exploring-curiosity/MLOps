@@ -1,6 +1,6 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────
-# Script: init_object_store.sh
+# Script: init_object_store.sh (CHI@UC version)
 # Purpose: Provision and mount Chameleon Object Store container
 #     using rclone with env variable-based config.
 # Target Site: CHI@UC

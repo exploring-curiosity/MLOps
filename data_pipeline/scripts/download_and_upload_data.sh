@@ -1,6 +1,6 @@
 #!/bin/bash
 # ─────────────────────────────────────────────────────────────
-# Script: download_and_upload_data.sh
+# Script: download_and_upload_data.sh (CHI@UC)
 # Purpose:
 #   - Download BirdCLEF 2025 dataset using Kaggle CLI
 #   - Extract only selected parts of the dataset
@@ -41,11 +41,11 @@ fi
 
 # Step 4: Upload raw data to object store
 echo "[INFO] Uploading train_audio/ to /mnt/object/raw/train_audio/"
-rclone copy ~/Data/birdclef-2025/train_audio /mnt/object/raw/train_audio --progress
+rclone copy ~/Data/birdclef-2025/train_audio chi_uc:object-persist-project38/raw/train_audio --progress
 
 echo "[INFO] Uploading train.csv and taxonomy.csv to /mnt/object/raw/"
-rclone copy ~/Data/birdclef-2025/train.csv /mnt/object/raw/ --progress
-rclone copy ~/Data/birdclef-2025/taxonomy.csv /mnt/object/raw/ --progress
+rclone copy ~/Data/birdclef-2025/train.csv chi_uc:object-persist-project38/raw/ --progress
+rclone copy ~/Data/birdclef-2025/taxonomy.csv chi_uc:object-persist-project38/raw/ --progress
 
 # Step 5: Select 10% of most recent train_soundscapes
 mkdir -p ~/Data/production_sample
@@ -62,6 +62,6 @@ done
 
 # Step 6: Upload sampled production data
 echo "[INFO] Uploading sampled train_soundscapes to /mnt/object/raw/production/train_soundscapes_subset/"
-rclone copy $SAMPLE_DIR /mnt/object/raw/production/train_soundscapes_subset --progress
+rclone copy $SAMPLE_DIR chi_uc:object-persist-project38/raw/production/train_soundscapes_subset --progress
 
 echo "All data uploaded to object store successfully."
