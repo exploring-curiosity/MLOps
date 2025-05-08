@@ -24,6 +24,7 @@ spec:
               value: admin
             - name: GF_SECURITY_ADMIN_PASSWORD
               value: admin
+
 ---
 apiVersion: v1
 kind: Service
