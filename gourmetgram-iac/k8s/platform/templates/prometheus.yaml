@@ -44,28 +44,21 @@ spec:
       containers:
         - name: prometheus
           image: prom/prometheus:latest
-#          args: ["server", "/data", "--console-address", ":9001"]
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus"
           ports:
             - containerPort: 9090
-            - containerPort: 9090
-#          env:
-#            - name: MINIO_ROOT_USER
-#              valueFrom:
-#                secretKeyRef:
-#                  name: minio-credentials
-#                  key: accesskey
-#            - name: MINIO_ROOT_PASSWORD
-#              valueFrom:
-#                secretKeyRef:
-#                  name: minio-credentials
-#                  key: secretkey
           volumeMounts:
+            - name: prometheus-config
+              mountPath: /etc/prometheus/prometheus.yml
+              subPath: prometheus.yml
             - name: prometheus-storage
-              mountPath: /etc/prometheus
+              mountPath: /prometheus
       volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
         - name: prometheus-storage
           persistentVolumeClaim:
             claimName: prometheus-pvc
@@ -83,44 +76,3 @@ spec:
       targetPort: 9090
   externalIPs:
     - {{ .Values.prometheus.externalIP }}
-#---
-#apiVersion: batch/v1
-#kind: Job
-#metadata:
-#  name: minio-create-bucket
-#  namespace: gourmetgram-platform
-#  annotations:
-#    argocd.argoproj.io/hook: PostSync
-#    argocd.argoproj.io/hook-delete-policy: HookSucceeded
-#spec:
-#  backoffLimit: 3
-#  ttlSecondsAfterFinished: 60
-#  template:
-#    spec:
-#      containers:
-#        - name: mc
-#          image: minio/mc
-#          env:
-#            - name: MINIO_ACCESS_KEY
-#              valueFrom:
-#                secretKeyRef:
-#                  name: minio-credentials
-#                  key: accesskey
-#            - name: MINIO_SECRET_KEY
-#              valueFrom:
-#                secretKeyRef:
-#                  name: minio-credentials
-#                  key: secretkey
-#          command: ["/bin/sh", "-c"]
-#          args:
-#            - |
-#              until mc alias set minio http://minio:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY; do
-#                echo "Waiting for MinIO...";
-#                sleep 5;
-#              done
-#              if ! mc ls minio/mlflow-artifacts; then
-#                mc mb minio/mlflow-artifacts;
-#              else
-#                echo "Bucket already exists.";
-#              fi
-#      restartPolicy: OnFailure
