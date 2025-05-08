@@ -45,6 +45,9 @@ spec:
         - name: prometheus
           image: prom/prometheus:latest
 #          args: ["server", "/data", "--console-address", ":9001"]
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
           ports:
             - containerPort: 9090
             - containerPort: 9090
