@@ -1,5 +1,20 @@
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: gourmetgram-platform
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+
+    scrape_configs:
+      - job_name: 'food11'
+        static_configs:
+          - targets: ['fastapi-server.gourmetgram-platform.svc.cluster.local:8000']
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: prometheus-pvc
