@@ -19,8 +19,6 @@ spec:
           image: grafana/grafana:latest
           ports:
             - containerPort: 3000
-          depends_on:
-            - prometheus
           env:
             - name: GF_SECURITY_ADMIN_USER
               value: admin
