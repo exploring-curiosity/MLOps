@@ -23,13 +23,13 @@ services:
         echo '[INFO] Installing Kaggle CLI...'
         pip install --no-cache-dir kaggle --quiet
 
+        export KAGGLE_CONFIG_DIR=/home/cc/MLOps/data_pipeline/kaggle
+
         echo '[INFO] Downloading dataset...'
         mkdir -p birdclef-2025 && cd birdclef-2025
         kaggle competitions download -c birdclef-2025
         unzip -qq birdclef-2025.zip
         rm birdclef-2025.zip
-
-        echo '[INFO] Contents:'
         ls -lh
       "
 
