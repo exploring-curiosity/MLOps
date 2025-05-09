@@ -7,7 +7,7 @@ spec:
   arguments:
     parameters:
     - name: endpoint-ip
-    - name : eval-endpoint-ip
+    - name : eval-ip
 
   templates:
   - name: training-and-build
