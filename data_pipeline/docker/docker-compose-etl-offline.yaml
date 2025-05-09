@@ -7,30 +7,26 @@ services:
   extract-data:
     container_name: etl_extract_data
     image: python:3.11
-    user: 1000:1000 # Run as non-root user (maps to 'cc')
+    user: root
     volumes:
       - birdclef:/data
-      - ../kaggle:/home/cc/.kaggle:ro # Mount kaggle.json securely
-    working_dir: /data
-    entrypoint: /bin/bash
+      - ./kaggle:/home/cc/.kaggle:ro
+    working_dir: /tmp
+    environment:
+      - KAGGLE_CONFIG_DIR=/home/.kaggle
     command: >
-      -c "
+      bash -c "
         set -e
-        echo '[INFO] Setting up virtualenv...'
-        python3 -m venv /data/venv
-        source /data/venv/bin/activate
-
         echo '[INFO] Installing Kaggle CLI...'
-        pip install --no-cache-dir kaggle --quiet
-
-        export KAGGLE_CONFIG_DIR=/home/cc/MLOps/data_pipeline/kaggle
+        pip install kaggle --quiet
 
         echo '[INFO] Downloading dataset...'
-        mkdir -p birdclef-2025 && cd birdclef-2025
+        mkdir -p /data/birdclef-2025 && cd /data/birdclef-2025
         kaggle competitions download -c birdclef-2025
         unzip -qq birdclef-2025.zip
         rm birdclef-2025.zip
-        ls -lh
+        echo '[INFO] Download complete. Contents:'
+        ls -lh /data/birdclef-2025
       "
 
   sample-production:
