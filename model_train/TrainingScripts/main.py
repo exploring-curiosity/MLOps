@@ -1,19 +1,18 @@
 import argparse
 import asyncio
-import mlflow
+import time
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from fastapi import FastAPI, Query
 
-app = FastAPI()
+import mlflow
+import mlflow.pytorch
+from mlflow.tracking import MlflowClient
 
-BEST_CKPT   = "./best_rawcnn.pt"
-NUM_CLS     = 206
-MODEL_NAME  = "RawCNN"
-training_lock = asyncio.Lock()
+from fastapi import FastAPI, Query, BackgroundTasks
 
-
+# 1) Define your model
 class RawAudioCNN(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
@@ -43,62 +42,83 @@ class RawAudioCNN(nn.Module):
         x = self.global_pool(x).squeeze(-1)  # [B,128]
         return self.fc(x)
 
-@app.post("/train")
-async def train_model(
-    model_name: str = Query(...),
-    data_source: str = Query(...),
-):
-    if training_lock.locked():
-        return {"status": "in_progress"}
 
-    async with training_lock, mlflow.start_run() as run:
-        # simulate your work
+# 2) MLflow client & experiment setup
+client = MlflowClient()
+
+EXP_NAME = "RawCNN"
+exp = client.get_experiment_by_name(EXP_NAME)
+exp_id = exp.experiment_id if exp else client.create_experiment(EXP_NAME)
+
+# 3) Constants
+MODEL_PATH = "./best_rawcnn.pt"
+NUM_CLS    = 206
+
+# 4) FastAPI + lock
+app = FastAPI()
+training_lock = asyncio.Lock()
+
+
+# 5) Background worker that holds the lock until done
+async def _background_train(run_id: str):
+    # re‑attach to the run  
+    with mlflow.start_run(run_id=run_id, experiment_id=exp_id):
+        # your “long” work
         await asyncio.sleep(60)
 
-        # 1) instantiate 
+        # load the state_dict + instantiate the module
         model = RawAudioCNN(num_classes=NUM_CLS)
-
-        # 2) load the weights you saved
-        state = torch.load(BEST_CKPT, map_location="cpu")
+        state = torch.load(MODEL_PATH, map_location="cpu")
         model.load_state_dict(state)
         model.eval()
 
-        # 3) log the nn.Module itself
+        # log it
         mlflow.pytorch.log_model(
             pytorch_model=model,
-            artifact_path="model",           # goes under mlruns/.../artifacts/model
-            registered_model_name=MODEL_NAME # optional, to register in the Model Registry
+            artifact_path="model",
+            registered_model_name=EXP_NAME
         )
+    # lock.release() will unblock future /train calls
+    training_lock.release()
 
-        # build your URL as before
-        run_id       = run.info.run_id
-        exp_id       = run.info.experiment_id
-        uri          = mlflow.get_tracking_uri().rstrip("/")
-        mlflow_link  = f"{uri}/#/experiments/{exp_id}/runs/{run_id}"
 
+# 6) Endpoint
+@app.post("/train")
+async def train_model(
+    background_tasks: BackgroundTasks,
+    model_name: str = Query(...),
+    data_source: str = Query(...)
+):
+    # If someone is already training, immediately tell them so
+    if training_lock.locked():
+        return {"status": "in_progress"}
+
+    # Acquire the lock *and hold it* until background task calls release()
+    await training_lock.acquire()
+
+    # 1) Create the MLflow run synchronously
+    run = client.create_run(
+        experiment_id=exp_id,
+        tags={"model_name": model_name, "data_source": data_source}
+    )
+    run_id = run.info.run_id
+
+    # 2) Schedule the heavy work in the background
+    background_tasks.add_task(_background_train, run_id)
+
+    # 3) Build the UI link & return immediately
+    uri = mlflow.get_tracking_uri().rstrip("/")
     return {
-        "status":      "done",
-        "mlflow_run":  run_id,
-        "mlflow_url":  mlflow_link
+        "status": "started",
+        "run_id": run_id,
+        "url": f"{uri}/#/experiments/{exp_id}/runs/{run_id}"
     }
-    
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run FastAPI training server")
-    parser.add_argument(
-        "--host", type=str, default="0.0.0.0",
-        help="Host to bind the server to"
-    )
-    parser.add_argument(
-        "--port", type=int, default=8000,
-        help="Port to bind the server to"
-    )
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--port", type=int, default=9090)
     args = parser.parse_args()
 
     import uvicorn
-    uvicorn.run(
-        "main:app",        # if this file is named main.py
-        host=args.host,
-        port=args.port,
-        reload=True
-    )
+    uvicorn.run("main:app", host=args.host, port=args.port, reload=True)
