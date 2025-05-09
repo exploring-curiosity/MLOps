@@ -92,9 +92,8 @@ services:
       GF_SECURITY_ALLOW_EMBEDDING: "true"
     volumes:
       - grafana_data:/var/lib/grafana
-      
+
 volumes:
-  minio_data_mlflow:
+  minio_data:
   postgres_data:
-  minio_data_ray:
   grafana_data:
