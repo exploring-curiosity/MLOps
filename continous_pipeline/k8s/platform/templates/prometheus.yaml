@@ -43,8 +43,7 @@ spec:
           image: prom/prometheus:latest
           #          args: ["server", "/data", "--console-address", ":9001"]
           ports:
-            - containerPort: 4000
-            - containerPort: 4000
+            - containerPort: 9090
           #          env:
           #            - name: MINIO_ROOT_USER
           #              valueFrom:
@@ -81,7 +80,7 @@ spec:
     app: prometheus
   ports:
     - port: 4000
-      targetPort: 4000
+      targetPort: 9090
   externalIPs:
     - {{ .Values.prometheus.externalIP }}
 #---
