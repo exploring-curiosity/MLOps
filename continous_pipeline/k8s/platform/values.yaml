@@ -8,4 +8,4 @@ grafana:
   externalIP: "0.0.0.0"
 
 prometheus:
-  externalIP: "0.0.0.0"
+  externalIP: "10.56.2.86"
