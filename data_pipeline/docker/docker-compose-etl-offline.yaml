@@ -13,7 +13,7 @@ services:
       - ./kaggle:/home/cc/.kaggle:ro
     working_dir: /tmp
     environment:
-      - KAGGLE_CONFIG_DIR=/home/.kaggle
+      - KAGGLE_CONFIG_DIR=/home/cc/.kaggle
     command: >
       bash -c "
         set -e
