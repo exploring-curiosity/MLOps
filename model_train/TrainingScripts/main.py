@@ -1,9 +1,13 @@
 import argparse
 import asyncio
-
+import mlflow
+import torch
 from fastapi import FastAPI, Query
 
 app = FastAPI()
+
+MODEL_PATH = "./best_rawcnn.pt"
+MODEL_NAME = "RawCNN"
 
 # Global lock to prevent concurrent training
 training_lock = asyncio.Lock()
@@ -29,12 +33,22 @@ async def train_model(
     async with training_lock:
         # simulate “work”
         print("hello world")
-        await asyncio.sleep(5)
+        with mlflow.start_run() as run:
+            await asyncio.sleep(60)
+            model = torch.load(MODEL_PATH, weights_only=False, map_location=torch.device('cpu'))
+            mlflow.pytorch.log_model(model, artifact_path="model")
+
+        run_id        = run.info.run_id
+        exp_id        = run.info.experiment_id
+        tracking_uri  = mlflow.get_tracking_uri()  # e.g. "http://localhost:5000"
+        ui_url = f"{tracking_uri.rstrip('/')}/#/experiments/{exp_id}/runs/{run_id}"
 
     return {
-        "status": "done",
-        "model_name": model_name,
-        "data_source": data_source
+        "status":       "done",
+        "model_name":   model_name,
+        "data_source":  data_source,
+        "mlflow_run_id": run_id,
+        "mlflow_url":   ui_url    
     }
 
 if __name__ == "__main__":
