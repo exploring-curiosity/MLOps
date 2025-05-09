@@ -69,6 +69,7 @@ spec:
         fi
 
         # Trigger model training
+        echo "[INFO] Eval IP: {{inputs.parameters.eval-ip}}" >&2 
         echo "[INFO] Triggering model training..." >&2
         echo "[INFO] Eval IP: {{inputs.parameters.eval-ip}}" >&2 
         RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:9090/trigger-training)
