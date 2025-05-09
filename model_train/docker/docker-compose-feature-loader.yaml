@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  feature_loader:
+    image: python:3.9-slim
+    container_name: feature_loader
+    working_dir: /data
+    volumes:
+      - features_data:/data
+    entrypoint: >
+      sh -c "
+        apt-get update && \
+        apt-get install -y unzip && \
+        pip install --no-cache-dir gdown && \
+        gdown --fuzzy --no-cookies 'https://drive.google.com/file/d/1IcNnjSda0Kf1D5w2DJn2yluJm0DP0xVP/view?usp=sharing' && \
+        mkdir -p /data/Features && \
+        unzip -qq features_sampled.zip -d /data/Features
+      "
+    restart: "no"
+
+volumes:
+  features_data:

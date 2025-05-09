@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.fast_api
+    container_name: fastapi-server
+    working_dir: /app
+    volumes:
+      - ../TrainingScripts:/app
+      - features_data:/app/Features
+    ports:
+      - "9090:9090"
+    command: >
+      python main.py --host 0.0.0.0 --port 9090
+
+  ray-head:
+    image: rayproject/ray:2.42.1
+    container_name: ray-head
+    command: >
+      /bin/sh -c "
+        mkdir -p /tmp/ray && \
+        chown -R root:root /tmp/ray && \
+        ray metrics launch-prometheus && \
+        ray start --head --port=6379 --dashboard-host=0.0.0.0 --block --metrics-export-port=8080
+      "
+    ports:
+      - "6379:6379"
+      - "8265:8265"
+      - "8080:8080"
+      - "8090:8090"
+    shm_size: '12g'
+    volumes:
+      - ray_tmp:/tmp/ray
+    environment:
+      - AWS_ACCESS_KEY_ID=your-access-key
+      - AWS_SECRET_ACCESS_KEY=your-secret-key
+      - AWS_ENDPOINT_URL=http://minio:9000
+    user: root
+
+  ray-worker-0:
+    image: rayproject/ray:2.42.1-gpu
+    container_name: ray-worker-0
+    command: ["ray", "start", "--address=ray-head:6379", "--num-cpus=32", "--num-gpus=1", "--block"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: "nvidia"
+              capabilities: ["gpu"]
+              device_ids: ["0"]
+    shm_size: '12g'
+    environment:
+      - AWS_ACCESS_KEY_ID=your-access-key
+      - AWS_SECRET_ACCESS_KEY=your-secret-key
+      - AWS_ENDPOINT_URL=http://minio:9000
+    volumes:
+      - features_data:/mnt
+    depends_on:
+      - ray-head
+
+volumes:
+  features_data:
+  ray_tmp:
