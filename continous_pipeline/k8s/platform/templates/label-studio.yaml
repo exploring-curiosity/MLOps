@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: label-studio-scripts-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: label-studio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: label-studio
+  template:
+    metadata:
+      labels:
+        app: label-studio
+    spec:
+      containers:
+        - name: label-studio
+          image: heartexlabs/label-studio:1.16.0
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: label-studio-scripts
+              mountPath: /label-studio/scripts
+          env:
+            - name: LABEL_STUDIO_URL
+              value: "http://label-studio:8080"
+            - name: LABEL_STUDIO_USERNAME
+              value: "labelstudio@example.com"
+            - name: LABEL_STUDIO_PASSWORD
+              value: "labelstudio"
+            - name: LABEL_STUDIO_USER_TOKEN
+              value: "ab9927067c51ff279d340d7321e4890dc2841c4a"
+            - name: POSTGRES_HOST
+              value: "app-db"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: "user"
+            - name: POSTGRES_PASSWORD
+              value: "password"
+            - name: POSTGRES_DB
+              value: "appdb"
+      volumes:
+        - name: label-studio-scripts
+          persistentVolumeClaim:
+            claimName: label-studio-scripts-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: label-studio
+spec:
+  selector:
+    app: label-studio
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 8080
+  type: ClusterIP
