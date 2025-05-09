@@ -1,0 +1,83 @@
+version: "3.8"
+
+volumes:
+  birdclef: {}
+
+services:
+  extract-data:
+    container_name: etl_extract_data
+    image: python:3.11
+    user: root
+    volumes:
+      - birdclef:/data
+      - ./kaggle:/root/.kaggle:ro
+    working_dir: /data
+    command: >
+      bash -c "
+        set -e
+        echo '[INFO] Installing Kaggle CLI...'
+        pip install kaggle --quiet
+
+        echo '[INFO] Downloading BirdCLEF 2025 dataset...'
+        mkdir -p birdclef-2025 && cd birdclef-2025
+        kaggle competitions download -c birdclef-2025
+
+        echo '[INFO] Extracting dataset...'
+        unzip -qq birdclef-2025.zip
+        rm -f birdclef-2025.zip
+
+        echo '[INFO] Extraction complete. Directory contents:'
+        ls -lh /data/birdclef-2025
+      "
+
+  sample-production:
+    container_name: etl_sample_prod
+    image: python:3.11
+    volumes:
+      - birdclef:/data
+    working_dir: /data/birdclef-2025
+    command: >
+      bash -c "
+        echo '[INFO] Sampling 30% of train_soundscapes for simulated online data...'
+
+        mkdir -p production_sample
+        total=\$(ls train_soundscapes/*.ogg | wc -l)
+        count=\$((total * 3 / 10))
+
+        ls -1 train_soundscapes/*.ogg | sort | tail -n \$count | while read f; do
+            cp \"\$f\" production_sample/
+        done
+
+        echo '[INFO] Sampled production files:'
+        ls -lh production_sample | head
+      "
+
+  upload-data:
+    container_name: etl_upload
+    image: rclone/rclone:latest
+    volumes:
+      - birdclef:/data
+      - ./config/rclone:/root/.config/rclone:ro
+    entrypoint: /bin/sh
+    command: >
+      -c "
+        if [ -z \"$RCLONE_CONTAINER\" ]; then
+          echo '[ERROR] RCLONE_CONTAINER not set!'
+          exit 1
+        fi
+
+        echo '[INFO] Uploading train_audio/ to object store...'
+        rclone copy /data/birdclef-2025/train_audio chi_uc:$RCLONE_CONTAINER/raw/train_audio \
+          --transfers=32 --checkers=16 --progress
+
+        echo '[INFO] Uploading train.csv and taxonomy.csv...'
+        rclone copy /data/birdclef-2025/train.csv chi_uc:$RCLONE_CONTAINER/raw/
+        rclone copy /data/birdclef-2025/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
+
+        echo '[INFO] Uploading 30% production_sample to object store...'
+        rclone copy /data/birdclef-2025/production_sample chi_uc:$RCLONE_CONTAINER/raw/production/train_soundscapes_subset \
+          --progress
+
+        echo '[SUCCESS] Upload complete.'
+        rclone lsd chi_uc:$RCLONE_CONTAINER
+      "
