@@ -61,7 +61,7 @@ spec:
               mountPath: /prometheus
             - name: prometheus-config
               mountPath: /etc/prometheus/prometheus.yml
-            
+              subPath: prometheus.yml
       volumes:
         - name: prometheus-storage
           persistentVolumeClaim:
@@ -69,6 +69,7 @@ spec:
         - name: prometheus-config
           configMap:
             name: prometheus-config
+            
 ---
 apiVersion: v1
 kind: Service
