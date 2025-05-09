@@ -33,7 +33,7 @@ spec:
       image: alpine:3.18
       command: [sh]
       source: |
-
+        set -x
         MAX_RETRIES=5
         RETRY_DELAY=3
         i=1
@@ -101,6 +101,7 @@ spec:
               echo "[INFO] Terminal state reached: $STATUS" >&2
               break
               ;;
+          esac
           sleep 10
         done
 
