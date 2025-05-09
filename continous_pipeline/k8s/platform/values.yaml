@@ -5,7 +5,7 @@ mlflow:
   externalIP: "0.0.0.0"
 
 grafana:
-  externalIP: "0.0.0.0"
+  externalIP: "10.56.2.86"
 
 prometheus:
   externalIP: "10.56.2.86"
