@@ -92,6 +92,8 @@ async def train_model(
     if training_lock.locked():
         return {"status": "in_progress"}
 
+
+    print("hello world")
     # Acquire the lock *and hold it* until background task calls release()
     await training_lock.acquire()
 
