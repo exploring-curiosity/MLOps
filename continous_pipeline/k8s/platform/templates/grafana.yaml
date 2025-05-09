@@ -18,7 +18,7 @@ spec:
         - name: grafana
           image: grafana/grafana:latest
           ports:
-            - containerPort: 3000
+            - containerPort: 4000
           env:
             - name: GF_SECURITY_ADMIN_USER
               value: admin
@@ -35,7 +35,7 @@ spec:
   selector:
     app: grafana
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: 4000
+      targetPort: 4000
   externalIPs:
     - {{ .Values.grafana.externalIP }}
