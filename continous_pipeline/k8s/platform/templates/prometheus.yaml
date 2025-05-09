@@ -11,6 +11,18 @@ spec:
     requests:
       storage: 5Gi
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: gourmetgram-platform
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+
+    scrape_configs: []
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -46,11 +58,17 @@ spec:
           #                  key: secretkey
           volumeMounts:
             - name: prometheus-storage
-              mountPath: /etc/prometheus
+              mountPath: /prometheus
+            - name: prometheus-config
+              mountPath: /etc/prometheus/prometheus.yml
+            
       volumes:
         - name: prometheus-storage
           persistentVolumeClaim:
             claimName: prometheus-pvc
+        - name: prometheus-config
+          configMap:
+            name: prometheus-config
 ---
 apiVersion: v1
 kind: Service
