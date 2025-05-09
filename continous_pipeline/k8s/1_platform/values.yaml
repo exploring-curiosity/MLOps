@@ -1,0 +1,14 @@
+minio:
+  externalIP: "0.0.0.0"
+
+mlflow:
+  externalIP: "0.0.0.0"
+
+grafana:
+  externalIP: "10.56.2.86"
+
+prometheus:
+  externalIP: "10.56.2.86"
+
+label-studio:
+  externalIP: "10.56.2.86"
