@@ -8,10 +8,9 @@ from fastapi import FastAPI, Query
 
 app = FastAPI()
 
-MODEL_PATH = "./best_rawcnn.pt"
-MODEL_NAME = "RawCNN"
-
-# Global lock to prevent concurrent training
+BEST_CKPT   = "./best_rawcnn.pt"
+NUM_CLS     = 206
+MODEL_NAME  = "RawCNN"
 training_lock = asyncio.Lock()
 
 
@@ -46,46 +45,42 @@ class RawAudioCNN(nn.Module):
 
 @app.post("/train")
 async def train_model(
-    model_name: str = Query(..., description="The name of the model to train"),
-    data_source: str = Query(..., description="Where to load training data from")
+    model_name: str = Query(...),
+    data_source: str = Query(...),
 ):
-    """
-    Simulate a training job by sleeping for a bit.
-    Prevents concurrent runs via an asyncio.Lock.
-    """
     if training_lock.locked():
-        # Another training is already in progress
-        return {
-            "status": "in_progress",
-            "model_name": model_name,
-            "data_source": data_source
-        }
+        return {"status": "in_progress"}
 
-    async with training_lock:
-        # simulate “work”
-        print("hello world")
-        with mlflow.start_run() as run:
-            await asyncio.sleep(60)
-            model = RawAudioCNN(num_classes=206)
-            state = torch.load(MODEL_PATH, map_location="cpu")
-            model.load_state_dict(state)
-            model.eval()
-            model = torch.load(MODEL_PATH, weights_only=False, map_location=torch.device('cpu'))
-            mlflow.pytorch.log_model(model, artifact_path="model")
+    async with training_lock, mlflow.start_run() as run:
+        # simulate your work
+        await asyncio.sleep(60)
 
-        run_id        = run.info.run_id
-        exp_id        = run.info.experiment_id
-        tracking_uri  = mlflow.get_tracking_uri()
-        ui_url = f"{tracking_uri.rstrip('/')}/#/experiments/{exp_id}/runs/{run_id}"
-        
-        return {
-            "status":       "done",
-            "model_name":   model_name,
-            "data_source":  data_source,
-            "mlflow_run_id": run_id,
-            "mlflow_url":   ui_url    
-        }
+        # 1) instantiate 
+        model = RawAudioCNN(num_classes=NUM_CLS)
 
+        # 2) load the weights you saved
+        state = torch.load(BEST_CKPT, map_location="cpu")
+        model.load_state_dict(state)
+        model.eval()
+
+        # 3) log the nn.Module itself
+        mlflow.pytorch.log_model(
+            pytorch_model=model,
+            artifact_path="model",           # goes under mlruns/.../artifacts/model
+            registered_model_name=MODEL_NAME # optional, to register in the Model Registry
+        )
+
+        # build your URL as before
+        run_id       = run.info.run_id
+        exp_id       = run.info.experiment_id
+        uri          = mlflow.get_tracking_uri().rstrip("/")
+        mlflow_link  = f"{uri}/#/experiments/{exp_id}/runs/{run_id}"
+
+    return {
+        "status":      "done",
+        "mlflow_run":  run_id,
+        "mlflow_url":  mlflow_link
+    }
     
 
 if __name__ == "__main__":
