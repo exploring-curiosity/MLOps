@@ -70,12 +70,29 @@ async def trigger_training():
 
     async with pipeline_lock:
         loop = asyncio.get_event_loop()
-        version = await loop.run_in_executor(None, ml_pipeline_flow)
+        # version = await loop.run_in_executor(None, ml_pipeline_flow)
+        version = None
+        print("Hello World")
         if version:
             return {"status": "Pipeline executed successfully", "new_model_version": version}
         else:
             return {"status": "Pipeline executed, but no new model registered"}
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9090)
+    import uvicorn, argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--host",
+        default="0.0.0.0",
+        help="Address to bind the server to"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=9090,
+        help="Port to bind the server on"
+    )
+    args = parser.parse_args()
+
+    uvicorn.run(app, host=args.host, port=args.port)

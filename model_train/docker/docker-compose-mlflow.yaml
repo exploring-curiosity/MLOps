@@ -1,5 +1,21 @@
 name: tracking_service
 services:
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.fast_api
+    container_name: fastapi-server
+    working_dir: /app
+    volumes:
+      - ../TrainingScripts:/app      # mounts the folder containing your main.py
+    ports:
+      - "9090:9090"                  # maps host port 8000 → container port 8000
+    command: >
+      python main.py
+        --host 0.0.0.0
+        --port 9090
+
   # MinIO object store service provides storage for artifacts, models
   minio:
     image: minio/minio
