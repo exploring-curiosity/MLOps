@@ -9,3 +9,6 @@ grafana:
 
 prometheus:
   externalIP: "0.0.0.0"
+
+label-studio:
+  externalIP: "0.0.0.0"
