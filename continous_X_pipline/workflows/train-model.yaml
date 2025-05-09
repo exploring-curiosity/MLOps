@@ -7,6 +7,7 @@ spec:
   arguments:
     parameters:
     - name: endpoint-ip
+    - name : eval-endpoint-ip
 
   templates:
   - name: training-and-build
@@ -17,6 +18,8 @@ spec:
             parameters:
             - name: endpoint-ip
               value: "{{workflow.parameters.endpoint-ip}}"
+            - name: eval-ip
+              value: "{{workflow.parameters.eval-ip}}"
       - - name: build-container
           template: trigger-build
           arguments:
@@ -29,6 +32,7 @@ spec:
     inputs:
       parameters:
       - name: endpoint-ip
+      - name: eval-ip
     script:
       image: alpine:3.18
       command: [sh]
@@ -68,7 +72,6 @@ spec:
         echo "[INFO] Triggering model training..." >&2
         RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:9090/trigger-training)
         CURL_EXIT_CODE=$?
-
         echo "[INFO] Training endpoint response was: $RESPONSE" >&2
 
 
