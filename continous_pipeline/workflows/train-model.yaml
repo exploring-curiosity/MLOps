@@ -33,7 +33,6 @@ spec:
       image: alpine:3.18
       command: [sh]
       source: |
-        set -x
         MAX_RETRIES=5
         RETRY_DELAY=3
         i=1
@@ -85,46 +84,9 @@ spec:
         fi
         echo "[INFO] MLflow run ID: $RUN_ID" >&2
 
-        # 3) Poll MLflow every 10s until the run reaches a terminal state
-        TERMINAL="FINISHED|FAILED|KILLED"
-        while true; do
-          STATUS=$(curl -s "http://129.114.25.236/api/2.0/mlflow/runs/get?run_id=${RUN_ID}" | jq -r '.run.info.status')
+        RESPONSE_RAW=$(curl -s "http://129.114.25.236/api/2.0/mlflow/runs/get?run_id=${RUN_ID}")
+        echo "[DEBUG] Raw MLflow response: $RESPONSE_RAW" >&2
 
-          echo "[INFO] Run ${RUN_ID} status: ${STATUS}" >&2
-
-          #if [[ "$STATUS" =~ ^(${TERMINAL})$ ]]; then
-          #  echo "[INFO] Terminal state reached: $STATUS" >&2
-          #  break
-          #fi
-          case "$STATUS" in
-            FINISHED|FAILED|KILLED)
-              echo "[INFO] Terminal state reached: $STATUS" >&2
-              break
-              ;;
-          esac
-          sleep 10
-        done
-
-        echo "[INFO] Training completed with status: $STATUS" >&2
-        # #CURL_EXIT_CODE=$?
-
-        echo "[INFO] Training endpoint response was: $RESPONSE" >&2
-
-
-        if [ $CURL_EXIT_CODE -ne 0 ]; then
-          echo "[ERROR] curl failed with code $CURL_EXIT_CODE" >&2
-          exit $CURL_EXIT_CODE
-        fi
-
-        # Extract model version
-        VERSION=$(echo "$RESPONSE" | jq -r '.new_model_version // empty')
-
-        if [ -z "$VERSION" ]; then
-          echo "[WARN] 'new_model_version' not found in response." >&2
-          exit 1
-        fi
-
-        echo -n "$VERSION"
 
   - name: trigger-build
     inputs:
