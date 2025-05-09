@@ -89,7 +89,7 @@ spec:
         # 3) Poll MLflow every 10s until the run reaches a terminal state
         TERMINAL="FINISHED|FAILED|KILLED"
         while true; do
-          STATUS=$(curl -s "${MLFLOW_TRACKING_URI}/api/2.0/mlflow/runs/get?run_id=${RUN_ID}"| jq -r '.run.info.status')
+          STATUS=$(curl -s "http://129.114.25.236/api/2.0/mlflow/runs/get?run_id=${RUN_ID}"| jq -r '.run.info.status')
 
           echo "[INFO] Run ${RUN_ID} status: ${STATUS}" >&2
 
