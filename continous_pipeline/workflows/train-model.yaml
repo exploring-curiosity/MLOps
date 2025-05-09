@@ -68,7 +68,7 @@ spec:
         echo "[INFO] Triggering model training..." >&2
         # RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:9090/train?model_name=resnet50&data_source=train)
         # RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:9090/trigger-training)
-        RESPONSE=$(curl -f -s -X POST "http://${ENDPOINT_IP}:9090/train?model_name=resnet50&data_source=train")
+        RESPONSE=$(curl -f -s -X POST "http://{{inputs.parameters.endpoint-ip}}:9090/train?model_name=resnet50&data_source=train")
         CURL_EXIT_CODE=$?
             if [ $CURL_EXIT_CODE -ne 0 ]; then
               echo "[ERROR] Training endpoint failed (code $CURL_EXIT_CODE)" >&2
