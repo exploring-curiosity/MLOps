@@ -1,0 +1,5 @@
+apiVersion: v2
+name: birdclef-staging
+version: 1.0.0
+description: Bird Classification Staging Deployment
+
