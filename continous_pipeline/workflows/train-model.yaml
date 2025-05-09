@@ -92,10 +92,17 @@ spec:
 
           echo "[INFO] Run ${RUN_ID} status: ${STATUS}" >&2
 
-          if [[ "$STATUS" =~ ^(${TERMINAL})$ ]]; then
-            echo "[INFO] Terminal state reached: $STATUS" >&2
-            break
-          fi
+          #if [[ "$STATUS" =~ ^(${TERMINAL})$ ]]; then
+          #  echo "[INFO] Terminal state reached: $STATUS" >&2
+          #  break
+          #fi
+          case "$STATUS" in
+            FINISHED|FAILED|KILLED)
+              echo "[INFO] Terminal state reached: $STATUS" >&2
+              break
+              ;;
+          esac
+          
 
           sleep 10
         done
