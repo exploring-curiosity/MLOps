@@ -1,18 +1,9 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: label-studio-scripts-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: label-studio
+  namespace: gourmetgram-platform
 spec:
   replicas: 1
   selector:
@@ -24,13 +15,10 @@ spec:
         app: label-studio
     spec:
       containers:
-        - name: label-studio
+        - name:  label-studio
           image: heartexlabs/label-studio:1.16.0
           ports:
             - containerPort: 8080
-          volumeMounts:
-            - name: label-studio-scripts
-              mountPath: /label-studio/scripts
           env:
             - name: LABEL_STUDIO_URL
               value: "http://label-studio:8080"
@@ -50,20 +38,23 @@ spec:
               value: "password"
             - name: POSTGRES_DB
               value: "appdb"
-      volumes:
-        - name: label-studio-scripts
-          persistentVolumeClaim:
-            claimName: label-studio-scripts-pvc
+#          command: ["/bin/sh", "-c"]
+#          args:
+#            - |
+#              pip install psycopg2-binary boto3 &&
+#              mlflow server --backend-store-uri postgresql://user:password@postgres/mlflowdb \
+#              --artifacts-destination s3://mlflow-artifacts/ --serve-artifacts --host 0.0.0.0 --port 8000
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: label-studio
+  namespace: gourmetgram-platform
 spec:
   selector:
     app: label-studio
   ports:
-    - protocol: TCP
-      port: 5000
+    - port: 8000
       targetPort: 8080
-  type: ClusterIP
+  externalIPs:
+    - {{ .Values.mlflow.externalIP }}
