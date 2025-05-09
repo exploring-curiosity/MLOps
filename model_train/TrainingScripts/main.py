@@ -75,8 +75,7 @@ async def _background_train(run_id: str):
         # log it
         mlflow.pytorch.log_model(
             pytorch_model=model,
-            artifact_path="model",
-            registered_model_name=EXP_NAME
+            artifact_path="model"
         )
     # lock.release() will unblock future /train calls
     training_lock.release()
