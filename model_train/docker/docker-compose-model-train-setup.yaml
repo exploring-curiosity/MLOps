@@ -30,7 +30,7 @@ services:
       - "8265:8265"
       - "8080:8080"
       - "8090:8090"
-    shm_size: '12g'
+    shm_size: '24g'
     volumes:
       - ray_tmp:/tmp/ray
     environment:
@@ -50,7 +50,7 @@ services:
             - driver: "nvidia"
               capabilities: ["gpu"]
               device_ids: ["0"]
-    shm_size: '12g'
+    shm_size: '24g'
     environment:
       - AWS_ACCESS_KEY_ID=your-access-key
       - AWS_SECRET_ACCESS_KEY=your-secret-key
