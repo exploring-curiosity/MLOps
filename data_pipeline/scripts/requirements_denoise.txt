@@ -1,0 +1,7 @@
+pandas==2.2.2
+tqdm==4.66.2
+soundfile==0.12.1
+pydub==0.25.1
+torchaudio==2.2.1
+torch==2.2.1
+demucs==4.0.0
