@@ -7,7 +7,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 
-COPY deps/train_requirements.txt /requirements.txt
+COPY docker/deps/train_requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt
 
 
