@@ -9,5 +9,6 @@ RUN pip install --pre --no-cache-dir pynvml && \
     fix-permissions "/home/${NB_USER}"
 
 RUN pip install --pre --no-cache-dir ray && \
+    pip install --pre --no-cache-dir ray[default] && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
