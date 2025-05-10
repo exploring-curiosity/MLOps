@@ -1,7 +1,7 @@
 version: "3.8"
 
 volumes:
-  birdclef_download: {}
+  birdclef_volume: {}
 
 services:
   extract-download:
@@ -9,27 +9,29 @@ services:
     image: python:3.11
     user: 1000:1000
     environment:
-      - KAGGLE_CONFIG_DIR=/data/kaggle
+      - KAGGLE_CONFIG_DIR=/workspace/kaggle
     volumes:
-      - birdclef_download:/data
-      - ../kaggle:/data/kaggle:ro
-    working_dir: /data
+      - birdclef_volume:/workspace
+      - ../kaggle:/workspace/kaggle:ro
+    working_dir: /workspace
     command: >
       bash -c "
         set -e
+        echo '[INFO] Creating download directory...'
+        mkdir -p workspace_data && cd workspace_data
+
         echo '[INFO] Creating virtualenv...'
         python -m venv /tmp/venv && source /tmp/venv/bin/activate
 
         echo '[INFO] Installing Kaggle CLI...'
         pip install --no-cache-dir kaggle
 
-        echo '[INFO] Downloading dataset...'
-        mkdir -p /data/birdclef-2025 && cd /data/birdclef-2025
+        echo '[INFO] Downloading BirdCLEF dataset...'
         kaggle competitions download -c birdclef-2025
         unzip -qq birdclef-2025.zip && rm birdclef-2025.zip
 
-        echo '[INFO] Download complete. Contents:'
-        ls -lh /data/birdclef-2025
+        echo '[INFO] Final contents:'
+        ls -lh /workspace/workspace_data
       "
 
   upload-raw:
@@ -38,18 +40,16 @@ services:
     environment:
       - RCLONE_CONTAINER=object-persist-project38
     volumes:
-      - birdclef_download:/data
+      - birdclef_volume:/workspace
       - ../config/rclone:/root/.config/rclone:ro
     entrypoint: /bin/sh
     command: >
       -c "
         set -e
-        echo '[INFO] Uploading to object store: chi_uc:$RCLONE_CONTAINER/raw'
-
-        rclone copy /data/birdclef-2025/train_audio chi_uc:$RCLONE_CONTAINER/raw/train_audio --progress
-        rclone copy /data/birdclef-2025/train.csv chi_uc:$RCLONE_CONTAINER/raw/
-        rclone copy /data/birdclef-2025/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
-
-        echo '[INFO] Upload and cleanup complete.'
-        rm -rf /data/birdclef-2025
+        echo '[INFO] Uploading raw data from workspace_data to object store...'
+        rclone copy /workspace/workspace_data/train_audio chi_uc:$RCLONE_CONTAINER/raw/train_audio --progress
+        rclone copy /workspace/workspace_data/train.csv chi_uc:$RCLONE_CONTAINER/raw/
+        rclone copy /workspace/workspace_data/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
+        echo '[INFO] Upload complete.'
+        rm -rf /workspace/workspace_data
       "
