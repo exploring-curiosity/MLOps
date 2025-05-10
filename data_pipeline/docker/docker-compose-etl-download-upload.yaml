@@ -17,8 +17,11 @@ services:
     command: >
       bash -c "
         set -e
+        echo '[INFO] Creating virtual environment...'
+        python -m venv /tmp/venv && source /tmp/venv/bin/activate
+
         echo '[INFO] Installing Kaggle CLI...'
-        pip install --quiet kaggle
+        pip install --no-cache-dir kaggle
 
         echo '[INFO] Downloading dataset...'
         mkdir -p birdclef-2025 && cd birdclef-2025
