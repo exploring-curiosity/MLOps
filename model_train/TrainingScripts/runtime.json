@@ -1,6 +1,8 @@
 {
-    "pip": "requirements.txt",
+    "container": {
+      "image": "ray-worker:gpu"
+    },
     "env_vars": {
-        "BIRDCLEF_BASE_DIR": "/mnt/data"
+      "BIRDCLEF_BASE_DIR": "/mnt/data"
     }
-}
+  }
