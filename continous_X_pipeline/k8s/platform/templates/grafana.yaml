@@ -35,7 +35,7 @@ spec:
   selector:
     app: grafana
   ports:
-    - port: 3000
+    - port: 3001
       targetPort: 3000
   externalIPs:
     - {{ .Values.grafana.externalIP }}
