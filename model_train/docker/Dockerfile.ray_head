@@ -1,0 +1,7 @@
+# Dockerfile.ray-head
+FROM rayproject/ray:2.42.1
+
+# install podman (and any other OS deps)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends podman \
+ && rm -rf /var/lib/apt/lists/*

@@ -18,7 +18,10 @@ services:
       python main.py --host 0.0.0.0 --port 9090
 
   ray-head:
-    image: rayproject/ray:2.42.1
+    build:
+      context: .
+      dockerfile: Dockerfile.ray_worker
+    image: ray-head:gpu 
     container_name: ray-head
     command: >
       /bin/sh -c "
