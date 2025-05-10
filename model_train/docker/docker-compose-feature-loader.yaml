@@ -17,6 +17,36 @@ services:
         unzip -o -qq features_sampled.zip -d /data/Features
       "
     restart: "no"
+  
+  taxonomy_loader:
+    image: python:3.9-slim
+    container_name: taxonomy_loader
+    working_dir: /data
+    volumes:
+      - features_data:/data
+    entrypoint: >
+      sh -c "
+        apt-get update && \
+        apt-get install -y curl && \
+        mkdir -p /data/Data/birdclef-2025 && \
+        curl -L -o /data/Data/birdclef-2025/taxonomy.csv 'https://nyu.box.com/s/si14xdrfj08bno99xi1ri5jcunl3hcv2?download=1'
+      "
+    restart: "no"
+
+  train_loader:
+    image: python:3.9-slim
+    container_name: train_loader
+    working_dir: /data
+    volumes:
+      - features_data:/data
+    entrypoint: >
+      sh -c "
+        apt-get update && \
+        apt-get install -y curl && \
+        mkdir -p /data/Data/birdclef-2025 && \
+        curl -L -o /data/Data/birdclef-2025/train.csv 'https://nyu.box.com/s/t1tlcnwbqk3j6dxkmwed63ajnjc7yyqc?download=1'
+      "
+    restart: "no"
 
 volumes:
   features_data:
