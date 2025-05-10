@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.ray_head
-    image: ray-head:gpu 
+    image: ray-head:custom
     container_name: ray-head
     command: >
       /bin/sh -c "

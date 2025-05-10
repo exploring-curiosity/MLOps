@@ -1,6 +1,12 @@
 FROM rayproject/ray:2.42.1-gpu
 
+USER root
 
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends podman \
+ && rm -rf /var/lib/apt/lists/*
+
+ 
 COPY deps/train_requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt
 
