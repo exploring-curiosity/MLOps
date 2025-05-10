@@ -20,7 +20,7 @@ services:
   ray-head:
     build:
       context: .
-      dockerfile: Dockerfile.ray_worker
+      dockerfile: Dockerfile.ray_head
     image: ray-head:gpu 
     container_name: ray-head
     command: >
