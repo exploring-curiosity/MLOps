@@ -95,6 +95,8 @@
         --dest-namespace "" \
         --helm-set-string minio.externalIP={{ external_ip }} \
         --helm-set-string mlflow.externalIP={{ external_ip }} \
+        --helm-set-string label-studio.externalIP={{ external_ip }} \
+        --helm-set-string prometheus.externalIP={{ external_ip }} \
         --helm-set-string grafana.externalIP={{ external_ip }} \
         --port-forward --port-forward-namespace=argocd \
         --sync-policy automated --self-heal
@@ -107,6 +109,8 @@
         --dest-namespace "" \
         --helm-set-string minio.externalIP={{ external_ip }} \
         --helm-set-string mlflow.externalIP={{ external_ip }} \
+        --helm-set-string label-studio.externalIP={{ external_ip }} \
+        --helm-set-string prometheus.externalIP={{ external_ip }} \
         --helm-set-string grafana.externalIP={{ external_ip }} \
         --port-forward --port-forward-namespace=argocd
       register: app_update
