@@ -1,0 +1,59 @@
+version: "3.8"
+
+volumes:
+  birdclef_block:
+    driver_opts:
+      type: none
+      o: bind
+      device: /mnt/block
+
+services:
+  extract-download:
+    container_name: etl_download_birdclef
+    image: python:3.11
+    user: 1000:1000
+    environment:
+      - KAGGLE_CONFIG_DIR=/data/kaggle
+    volumes:
+      - birdclef_block:/data
+      - ../kaggle:/data/kaggle:ro
+    working_dir: /data
+    command: >
+      bash -c "
+        set -e
+        echo '[INFO] Installing Kaggle CLI...'
+        pip install --quiet kaggle
+
+        echo '[INFO] Creating download directory...'
+        mkdir -p birdclef-2025 && cd birdclef-2025
+
+        echo '[INFO] Downloading dataset...'
+        kaggle competitions download -c birdclef-2025
+
+        echo '[INFO] Extracting...'
+        unzip -qq birdclef-2025.zip && rm birdclef-2025.zip
+
+        echo '[INFO] Contents of /data/birdclef-2025:'
+        ls -lh /data/birdclef-2025
+      "
+
+  upload-raw:
+    container_name: etl_upload_raw
+    image: rclone/rclone:latest
+    environment:
+      - RCLONE_CONTAINER=object-persist-project38
+    volumes:
+      - birdclef_block:/data
+      - ../config/rclone:/root/.config/rclone:ro
+    entrypoint: /bin/sh
+    command: >
+      -c "
+        set -e
+        echo '[INFO] Uploading to object store: chi_uc:$RCLONE_CONTAINER/raw'
+
+        rclone copy /data/birdclef-2025/train_audio chi_uc:$RCLONE_CONTAINER/raw/train_audio --progress
+        rclone copy /data/birdclef-2025/train.csv chi_uc:$RCLONE_CONTAINER/raw/
+        rclone copy /data/birdclef-2025/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
+
+        echo '[INFO] Upload complete!'
+      "
