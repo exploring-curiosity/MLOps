@@ -1,0 +1,33 @@
+version: "3.9"
+
+volumes:
+  etl_volume: {}
+
+services:
+  denoise-audio:
+    container_name: etl_denoise_audio
+    image: python:3.11
+    user: root
+    volumes:
+      - etl_volume:/workspace/tmp_features
+      - ../scripts:/workspace/scripts:ro
+    working_dir: /workspace/tmp_features
+    entrypoint: /bin/bash
+    command: >
+      -c "
+        echo '[INFO] Cleaning up old docker containers/volumes...'
+        docker container prune -f || true
+        docker volume prune -f || true
+
+        echo '[INFO] Installing dependencies...'
+        pip install --quiet -r /workspace/scripts/requirements_denoise.txt
+
+        echo '[INFO] Starting denoising...'
+        python /workspace/scripts/denoise_chunks.py \
+          --input_dir /workspace/tmp_download/birdclef-2025/train_audio \
+          --csv_path /workspace/tmp_download/birdclef-2025/train.csv \
+          --output_dir /workspace/tmp_features/denoised
+
+        echo '[INFO] Denoising complete. Sample files:'
+        find /workspace/tmp_features/denoised -type f | head -n 10
+      "
