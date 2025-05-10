@@ -1,47 +1,29 @@
+version: "3.8"
+
 volumes:
-  bird_audio_data:
+  birdclef_data:
     external: true
 
 services:
   init-data:
     image: python:3.11
     volumes:
-      - bird_audio_data:/data
-      - ./taxonomy.csv:/tmp/taxonomy.csv
+      - birdclef_data:/data
     working_dir: /data
-    command: |
-      bash -c '
-      set -e
-      echo "Installing dependencies..."
-      pip install gdown pandas
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        echo "Creating BirdCLEF data directory..."
+        mkdir -p /data/BirdCLEF && cd /data/BirdCLEF
 
-      echo "Creating dataset directory..."
-      mkdir -p /data/Bird-Audio && cd /data/Bird-Audio
+        echo "Downloading dataset..."
+        curl -L https://drive.google.com/file/d/1NiRW10HCZKg_AqGjbm-mlHO5FA1XskmW/view?usp=sharing --output birdclef_dataset.zip
 
-      echo "Downloading dataset from Google Drive..."
-      gdown https://drive.google.com/uc?id=1Y2VuYpj2Qf3hRT0TlLCq9aSIQk5f-DN2
+        echo "Extracting..."
+        unzip -q birdclef_dataset.zip
+        rm birdclef_dataset.zip
 
-      echo "Extracting dataset..."
-      unzip -q *.zip
-      rm *.zip
-
-      echo "Organizing dataset into class folders..."
-      python3 - <<EOF
-      import os
-      import pandas as pd
-
-      taxonomy_df = pd.read_csv("/tmp/taxonomy.csv")
-      class_names = taxonomy_df["common_name"].dropna().unique().tolist()
-
-      base_dir = "/data/Bird-Audio"
-      subdirs = ["train", "val", "test"]
-
-      for subdir in subdirs:
-        subdir_path = os.path.join(base_dir, subdir)
-        os.makedirs(subdir_path, exist_ok=True)
-        for cname in class_names:
-            safe_name = cname.replace("/", "-")
-            os.makedirs(os.path.join(subdir_path, safe_name), exist_ok=True)
-      EOF
-      '
+        echo "BirdCLEF dataset is ready at /data/BirdCLEF/features_sampled/"
     restart: "no"
