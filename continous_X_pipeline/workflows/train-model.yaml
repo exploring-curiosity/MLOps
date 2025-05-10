@@ -33,7 +33,7 @@ spec:
       image: alpine:3.18
       command: [sh]
       source: |
-
+  
         MAX_RETRIES=5
         RETRY_DELAY=3
         i=1
@@ -76,7 +76,32 @@ spec:
           echo "[ERROR] curl failed with code $CURL_EXIT_CODE" >&2
           exit $CURL_EXIT_CODE
         fi
-
+    
+        #Poll MLFlow continously for Model to Finish Training
+        
+        #Extracting the Run ID from RESPONSE
+        RUN_ID=$(echo "$RESPONSE" | jq -r '.run_id')    
+        if [ -z "$RUN_ID" ]; then
+          echo "[ERROR] run_id not found in response" >&2
+          exit 1
+        fi
+        echo "[INFO] MLflow run ID: $RUN_ID" >&2
+        
+        
+        #Polling MLFlow
+        TERMINAL="FINISHED|FAILED|KILLED"
+        while true; do
+          STATUS=$(curl -s "http://129.114.27.116:8000/api/2.0/mlflow/runs/get?run_id=${RUN_ID}"| jq -r '.run.info.status')
+          echo "[INFO] Run ${RUN_ID} status: ${STATUS}" >&2
+          case "$STATUS" in
+            FINISHED|FAILED|KILLED)
+              echo "[INFO] Terminal state reached: $STATUS" >&2
+              break
+              ;;
+          esac
+          sleep 10
+        done
+       
         # Extract model version
         VERSION=$(echo "$RESPONSE" | jq -r '.new_model_version // empty')
 
