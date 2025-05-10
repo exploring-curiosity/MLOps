@@ -44,7 +44,7 @@ services:
   ray-worker-0:
     build:
       context: .
-      dockerfile: Dockerfile.ray-worker
+      dockerfile: Dockerfile.ray_worker
     image: ray-worker:gpu 
     container_name: ray-worker-0
     command: ["ray", "start", "--address=ray-head:6379", "--num-cpus=32", "--num-gpus=1", "--block"]
