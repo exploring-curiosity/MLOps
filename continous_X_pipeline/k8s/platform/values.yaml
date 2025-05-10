@@ -5,10 +5,10 @@ mlflow:
   externalIP: "0.0.0.0"
 
 grafana:
-  externalIP: "10.56.2.86"
+  externalIP: "10.56.0.227"
 
 prometheus:
   externalIP: "10.56.0.227"
 
 label-studio:
-  externalIP: "10.56.2.86"
+  externalIP: "10.56.0.227"
