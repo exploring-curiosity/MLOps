@@ -10,3 +10,6 @@ ipython
 loralib
 peft
 timm
+ray
+pynvml
+mlflow

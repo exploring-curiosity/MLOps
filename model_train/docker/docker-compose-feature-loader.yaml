@@ -10,9 +10,9 @@ services:
     entrypoint: >
       sh -c "
         apt-get update && \
-        apt-get install -y unzip && \
-        pip install --no-cache-dir gdown && \
-        gdown --fuzzy --no-cookies 'https://drive.google.com/file/d/1IcNnjSda0Kf1D5w2DJn2yluJm0DP0xVP/view?usp=sharing' && \
+        apt-get install -y unzip curl && \
+        # download from Box (adds ?download=1 for direct file download)
+        curl -L -o features_sampled.zip 'https://nyu.box.com/s/av7hp140273hrh1tyl9d1jo28k5lt6mr?download=1' && \
         mkdir -p /data/Features && \
         unzip -qq features_sampled.zip -d /data/Features
       "
