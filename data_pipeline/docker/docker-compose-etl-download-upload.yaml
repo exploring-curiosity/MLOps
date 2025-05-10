@@ -1,7 +1,7 @@
 version: "3.8"
 
 volumes:
-  birdclef_root: {}
+  birdclef_download: {}
 
 services:
   extract-download:
@@ -11,24 +11,24 @@ services:
     environment:
       - KAGGLE_CONFIG_DIR=/data/kaggle
     volumes:
-      - birdclef_root:/data
+      - birdclef_download:/data
       - ../kaggle:/data/kaggle:ro
     working_dir: /data
     command: >
       bash -c "
         set -e
-        echo '[INFO] Creating virtual environment...'
+        echo '[INFO] Creating virtualenv...'
         python -m venv /tmp/venv && source /tmp/venv/bin/activate
 
         echo '[INFO] Installing Kaggle CLI...'
         pip install --no-cache-dir kaggle
 
         echo '[INFO] Downloading dataset...'
-        mkdir -p birdclef-2025 && cd birdclef-2025
+        mkdir -p /data/birdclef-2025 && cd /data/birdclef-2025
         kaggle competitions download -c birdclef-2025
         unzip -qq birdclef-2025.zip && rm birdclef-2025.zip
 
-        echo '[INFO] Contents of /data/birdclef-2025:'
+        echo '[INFO] Download complete. Contents:'
         ls -lh /data/birdclef-2025
       "
 
@@ -38,7 +38,7 @@ services:
     environment:
       - RCLONE_CONTAINER=object-persist-project38
     volumes:
-      - birdclef_root:/data
+      - birdclef_download:/data
       - ../config/rclone:/root/.config/rclone:ro
     entrypoint: /bin/sh
     command: >
@@ -50,8 +50,6 @@ services:
         rclone copy /data/birdclef-2025/train.csv chi_uc:$RCLONE_CONTAINER/raw/
         rclone copy /data/birdclef-2025/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
 
-        echo '[INFO] Cleaning up local staging...'
+        echo '[INFO] Upload and cleanup complete.'
         rm -rf /data/birdclef-2025
-
-        echo '[INFO] Upload and cleanup complete!'
       "
