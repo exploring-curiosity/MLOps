@@ -1,11 +1,7 @@
 version: "3.8"
 
 volumes:
-  birdclef_block:
-    driver_opts:
-      type: none
-      o: bind
-      device: /mnt/block
+  birdclef_root: {}
 
 services:
   extract-download:
@@ -15,7 +11,7 @@ services:
     environment:
       - KAGGLE_CONFIG_DIR=/data/kaggle
     volumes:
-      - birdclef_block:/data
+      - birdclef_root:/data
       - ../kaggle:/data/kaggle:ro
     working_dir: /data
     command: >
@@ -24,13 +20,9 @@ services:
         echo '[INFO] Installing Kaggle CLI...'
         pip install --quiet kaggle
 
-        echo '[INFO] Creating download directory...'
-        mkdir -p birdclef-2025 && cd birdclef-2025
-
         echo '[INFO] Downloading dataset...'
+        mkdir -p birdclef-2025 && cd birdclef-2025
         kaggle competitions download -c birdclef-2025
-
-        echo '[INFO] Extracting...'
         unzip -qq birdclef-2025.zip && rm birdclef-2025.zip
 
         echo '[INFO] Contents of /data/birdclef-2025:'
@@ -43,7 +35,7 @@ services:
     environment:
       - RCLONE_CONTAINER=object-persist-project38
     volumes:
-      - birdclef_block:/data
+      - birdclef_root:/data
       - ../config/rclone:/root/.config/rclone:ro
     entrypoint: /bin/sh
     command: >
@@ -55,5 +47,8 @@ services:
         rclone copy /data/birdclef-2025/train.csv chi_uc:$RCLONE_CONTAINER/raw/
         rclone copy /data/birdclef-2025/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
 
-        echo '[INFO] Upload complete!'
+        echo '[INFO] Cleaning up local staging...'
+        rm -rf /data/birdclef-2025
+
+        echo '[INFO] Upload and cleanup complete!'
       "
