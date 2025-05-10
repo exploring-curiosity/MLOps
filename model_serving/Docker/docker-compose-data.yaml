@@ -15,15 +15,18 @@ services:
       - -c
       - |
         set -e
+        echo "Installing gdown..."
+        pip install --no-cache-dir gdown
+
         echo "Creating BirdCLEF data directory..."
         mkdir -p /data/BirdCLEF && cd /data/BirdCLEF
 
-        echo "Downloading dataset..."
-        curl -L https://drive.google.com/file/d/1NiRW10HCZKg_AqGjbm-mlHO5FA1XskmW/view?usp=sharing --output birdclef_dataset.zip
+        echo "Downloading dataset from Google Drive..."
+        gdown --id 1NiRW10HCZKg_AqGjbm-mlHO5FA1XskmW -O birdclef_dataset.zip
 
-        echo "Extracting..."
+        echo "Extracting dataset..."
         unzip -q birdclef_dataset.zip
         rm birdclef_dataset.zip
 
-        echo "BirdCLEF dataset is ready at /data/BirdCLEF/features_sampled/"
+        echo "BirdCLEF dataset is ready at /data/BirdCLEF/"
     restart: "no"
