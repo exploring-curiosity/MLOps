@@ -68,15 +68,15 @@ data "openstack_networking_floatingip_v2" "reserved_ip" {
   address = "129.114.26.3"  # Replace this with your actual reserved IP
 }
 
-resource "openstack_networking_floatingip_associate_v2" "associate_reserved_ip" {
-  floating_ip = data.openstack_networking_floatingip_v2.reserved_ip.address
-  description = "Bird Classification IP for ${var.suffix}"
-  port_id     = openstack_networking_port_v2.sharednet2_ports["node1"].id
-}
-
-# resource "openstack_networking_floatingip_v2" "floating_ip" {
-#   pool        = "public"
-#   description = "BirdClef IP for ${var.suffix}"
+# resource "openstack_networking_floatingip_associate_v2" "associate_reserved_ip" {
+#   floating_ip = data.openstack_networking_floatingip_v2.reserved_ip.address
+#   description = "Bird Classification IP for ${var.suffix}"
 #   port_id     = openstack_networking_port_v2.sharednet2_ports["node1"].id
 # }
+
+resource "openstack_networking_floatingip_v2" "floating_ip" {
+    pool        = "public"
+    description = "Bird Classification IP for ${var.suffix}"
+    port_id     = openstack_networking_port_v2.sharednet2_ports["node1"].id
+}
 
