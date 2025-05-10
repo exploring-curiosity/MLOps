@@ -1,4 +1,4 @@
-version: '3.8'
+name: feature_setup
 
 services:
   feature_loader:
@@ -12,11 +12,12 @@ services:
         apt-get update && \
         apt-get install -y unzip curl && \
         # download from Box (adds ?download=1 for direct file download)
-        curl -L -o features_sampled.zip 'https://nyu.box.com/s/av7hp140273hrh1tyl9d1jo28k5lt6mr?download=1' && \
+        curl -L -o features_sampled.zip 'https://nyu.box.com/shared/static/av7hp140273hrh1tyl9d1jo28k5lt6mr.zip' && \
         mkdir -p /data/Features && \
-        unzip -qq features_sampled.zip -d /data/Features
+        unzip -o -qq features_sampled.zip -d /data/Features
       "
     restart: "no"
 
 volumes:
   features_data:
+    name: features_data

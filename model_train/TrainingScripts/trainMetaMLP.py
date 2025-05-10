@@ -27,6 +27,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
 
 DEVICE         = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BATCH_SIZE     = 64
@@ -40,11 +41,12 @@ SAVE_EPOCH_CK  = False
 BEST_CKPT      = "best_meta_mlp.pt"
 THRESHOLD_INIT = 0.5
 
-FEATURE_BASE   = "/home/jovyan/Features"
-TRAIN_MANIFEST = os.path.join(FEATURE_BASE, "manifest_train.csv")
-TEST_MANIFEST  = os.path.join(FEATURE_BASE, "manifest_test.csv")
-TAXONOMY_CSV   = "/home/jovyan/Data/birdclef-2025/taxonomy.csv"
-TRAIN_META     = "/home/jovyan/Data/birdclef-2025/train.csv"
+
+TAXONOMY_CSV    = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "taxonomy.csv")
+TRAIN_MANIFEST  = os.path.join(birdclef_base_dir, "Features", "manifest_train.csv")
+TEST_MANIFEST   = os.path.join(birdclef_base_dir, "Features", "manifest_test.csv")
+TRAIN_META      = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "train.csv")
+FEATURE_BASE    = os.path.join(birdclef_base_dir, "Features")
 
 # ─── MLflow & SYSTEM METRICS ─────────────────────────────────────────────────
 mlflow.set_experiment("MetaMLP_Supervisor")

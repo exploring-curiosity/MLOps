@@ -25,6 +25,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Using device:", DEVICE)
@@ -53,11 +54,11 @@ EPOCHS       = args.epochs
 SAVE_CKPT    = False
 BEST_CKPT    = "best_rawcnn.pt"
 
-TAXONOMY_CSV = "/home/jovyan/Data/birdclef-2025/taxonomy.csv"
-TRAIN_MAN    = "/home/jovyan/Features/manifest_train.csv"
-TEST_MAN     = "/home/jovyan/Features/manifest_test.csv"
-TRAIN_META   = "/home/jovyan/Data/birdclef-2025/train.csv"
-FEATURE_BASE = "/home/jovyan/Features"
+TAXONOMY_CSV    = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "taxonomy.csv")
+TRAIN_MAN       = os.path.join(birdclef_base_dir, "Features", "manifest_train.csv")
+TEST_MAN        = os.path.join(birdclef_base_dir, "Features", "manifest_test.csv")
+TRAIN_META      = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "train.csv")
+FEATURE_BASE    = os.path.join(birdclef_base_dir, "Features")
 
 tax_df  = pd.read_csv(TAXONOMY_CSV)
 CLASSES = sorted(tax_df["primary_label"].astype(str).tolist())

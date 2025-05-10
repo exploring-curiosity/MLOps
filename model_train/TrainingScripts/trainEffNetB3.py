@@ -24,6 +24,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Using device:", DEVICE)
@@ -50,11 +51,11 @@ EPOCHS         = args.epochs
 SAVE_EPOCH_CK  = False
 BEST_CKPT      = "best_effb3_lora.pt"
 
-TAXONOMY_CSV   = "/home/jovyan/Data/birdclef-2025/taxonomy.csv"
-TRAIN_MAN      = "/home/jovyan/Features/manifest_train.csv"
-TEST_MAN       = "/home/jovyan/Features/manifest_test.csv"
-TRAIN_CSV      = "/home/jovyan/Data/birdclef-2025/train.csv"
-FEATURE_BASE   = "/home/jovyan/Features"
+TAXONOMY_CSV    = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "taxonomy.csv")
+TRAIN_MAN       = os.path.join(birdclef_base_dir, "Features", "manifest_train.csv")
+TEST_MAN        = os.path.join(birdclef_base_dir, "Features", "manifest_test.csv")
+TRAIN_CSV      = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "train.csv")
+FEATURE_BASE    = os.path.join(birdclef_base_dir, "Features")
 
 TARGET_MODULES  = ["conv_pw","conv_dw","conv_pwl","conv_head"]
 MODULES_TO_SAVE = ["classifier"]
