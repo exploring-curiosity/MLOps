@@ -1,37 +1,1077 @@
-version: "3.8"
+Last login: Fri May  9 19:41:56 on ttys013
+(base) vaishnavideshmukh@Mac ~ % ssh -i ~/.ssh/id_rsa_chameleon_project_g38 cc@129.114.26.51
+The authenticity of host '129.114.26.51 (129.114.26.51)' can't be established.
+ED25519 key fingerprint is SHA256:2JibLeVZvbxZ17wwOrWAwJLliShHUpIXuKIME6yePTA.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '129.114.26.51' (ED25519) to the list of known hosts.
+Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-47-generic x86_64)
 
-volumes:
-  birdclef_volume: {}
+cc@node-data-project38:~$ Read from remote host 129.114.26.51: Connection reset by peer
+Connection to 129.114.26.51 closed.
+client_loop: send disconnect: Broken pipe
+(base) vaishnavideshmukh@Mac ~ % ssh -i ~/.ssh/id_rsa_chameleon_project_g38 cc@129.114.26.51
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that a host key has just been changed.
+The fingerprint for the ED25519 key sent by the remote host is
+SHA256:2SgVWgvF4Ne8SdBADL2QOIKdBjlS5zGizubaiSe7f54.
+Please contact your system administrator.
+Add correct host key in /Users/vaishnavideshmukh/.ssh/known_hosts to get rid of this message.
+Offending ECDSA key in /Users/vaishnavideshmukh/.ssh/known_hosts:72
+Host key for 129.114.26.51 has changed and you have requested strict checking.
+Host key verification failed.
+(base) vaishnavideshmukh@Mac ~ % ssh-keygen -R 129.114.26.51
+
+# Host 129.114.26.51 found: line 70
+# Host 129.114.26.51 found: line 71
+# Host 129.114.26.51 found: line 72
+/Users/vaishnavideshmukh/.ssh/known_hosts updated.
+Original contents retained as /Users/vaishnavideshmukh/.ssh/known_hosts.old
+(base) vaishnavideshmukh@Mac ~ % ssh -i ~/.ssh/id_rsa_chameleon_project_g38 cc@129.114.26.51
+The authenticity of host '129.114.26.51 (129.114.26.51)' can't be established.
+ED25519 key fingerprint is SHA256:2SgVWgvF4Ne8SdBADL2QOIKdBjlS5zGizubaiSe7f54.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '129.114.26.51' (ED25519) to the list of known hosts.
+Welcome to Ubuntu 24.04.1 LTS (GNU/Linux 6.8.0-47-generic x86_64)
+
+cc@node-data-pipeline-project38:~$ curl https://rclone.org/install.sh | sudo bash
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  4734  100  4734    0     0  11338      0 --:--:-- --:--:-- --:--:-- 11352
+Archive:  rclone-current-linux-amd64.zip
+   creating: rclone-v1.69.2-linux-amd64/
+  inflating: rclone-v1.69.2-linux-amd64/rclone
+  inflating: rclone-v1.69.2-linux-amd64/README.html
+  inflating: rclone-v1.69.2-linux-amd64/README.txt
+  inflating: rclone-v1.69.2-linux-amd64/git-log.txt
+  inflating: rclone-v1.69.2-linux-amd64/rclone.1
+Purging old database entries in /usr/share/man...
+Processing manual pages under /usr/share/man...
+Checking for stray cats under /usr/share/man...
+Checking for stray cats under /var/cache/man...
+Purging old database entries in /usr/share/man/ja...
+Processing manual pages under /usr/share/man/ja...
+Checking for stray cats under /usr/share/man/ja...
+Checking for stray cats under /var/cache/man/ja...
+Purging old database entries in /usr/share/man/pt_BR...
+Processing manual pages under /usr/share/man/pt_BR...
+Checking for stray cats under /usr/share/man/pt_BR...
+Checking for stray cats under /var/cache/man/pt_BR...
+Purging old database entries in /usr/share/man/sr...
+Processing manual pages under /usr/share/man/sr...
+Checking for stray cats under /usr/share/man/sr...
+Checking for stray cats under /var/cache/man/sr...
+Purging old database entries in /usr/share/man/fr...
+Processing manual pages under /usr/share/man/fr...
+Checking for stray cats under /usr/share/man/fr...
+Checking for stray cats under /var/cache/man/fr...
+Purging old database entries in /usr/share/man/pl...
+Processing manual pages under /usr/share/man/pl...
+Checking for stray cats under /usr/share/man/pl...
+Checking for stray cats under /var/cache/man/pl...
+Purging old database entries in /usr/share/man/ko...
+Processing manual pages under /usr/share/man/ko...
+Checking for stray cats under /usr/share/man/ko...
+Checking for stray cats under /var/cache/man/ko...
+Purging old database entries in /usr/share/man/sv...
+Processing manual pages under /usr/share/man/sv...
+Checking for stray cats under /usr/share/man/sv...
+Checking for stray cats under /var/cache/man/sv...
+Purging old database entries in /usr/share/man/pt...
+Processing manual pages under /usr/share/man/pt...
+Checking for stray cats under /usr/share/man/pt...
+Checking for stray cats under /var/cache/man/pt...
+Purging old database entries in /usr/share/man/hu...
+Processing manual pages under /usr/share/man/hu...
+Checking for stray cats under /usr/share/man/hu...
+Checking for stray cats under /var/cache/man/hu...
+Purging old database entries in /usr/share/man/fi...
+Processing manual pages under /usr/share/man/fi...
+Checking for stray cats under /usr/share/man/fi...
+Checking for stray cats under /var/cache/man/fi...
+Purging old database entries in /usr/share/man/ru...
+Processing manual pages under /usr/share/man/ru...
+Checking for stray cats under /usr/share/man/ru...
+Checking for stray cats under /var/cache/man/ru...
+Purging old database entries in /usr/share/man/tr...
+Processing manual pages under /usr/share/man/tr...
+Checking for stray cats under /usr/share/man/tr...
+Checking for stray cats under /var/cache/man/tr...
+Purging old database entries in /usr/share/man/uk...
+Processing manual pages under /usr/share/man/uk...
+Checking for stray cats under /usr/share/man/uk...
+Checking for stray cats under /var/cache/man/uk...
+Purging old database entries in /usr/share/man/cs...
+Processing manual pages under /usr/share/man/cs...
+Checking for stray cats under /usr/share/man/cs...
+Checking for stray cats under /var/cache/man/cs...
+Purging old database entries in /usr/share/man/zh_TW...
+Processing manual pages under /usr/share/man/zh_TW...
+Checking for stray cats under /usr/share/man/zh_TW...
+Checking for stray cats under /var/cache/man/zh_TW...
+Purging old database entries in /usr/share/man/es...
+Processing manual pages under /usr/share/man/es...
+Checking for stray cats under /usr/share/man/es...
+Checking for stray cats under /var/cache/man/es...
+Purging old database entries in /usr/share/man/id...
+Processing manual pages under /usr/share/man/id...
+Checking for stray cats under /usr/share/man/id...
+Checking for stray cats under /var/cache/man/id...
+Purging old database entries in /usr/share/man/sl...
+Processing manual pages under /usr/share/man/sl...
+Checking for stray cats under /usr/share/man/sl...
+Checking for stray cats under /var/cache/man/sl...
+Purging old database entries in /usr/share/man/nl...
+Processing manual pages under /usr/share/man/nl...
+Checking for stray cats under /usr/share/man/nl...
+Checking for stray cats under /var/cache/man/nl...
+Purging old database entries in /usr/share/man/it...
+Processing manual pages under /usr/share/man/it...
+Checking for stray cats under /usr/share/man/it...
+Checking for stray cats under /var/cache/man/it...
+Purging old database entries in /usr/share/man/zh_CN...
+Processing manual pages under /usr/share/man/zh_CN...
+Checking for stray cats under /usr/share/man/zh_CN...
+Checking for stray cats under /var/cache/man/zh_CN...
+Purging old database entries in /usr/share/man/hr...
+Processing manual pages under /usr/share/man/hr...
+Checking for stray cats under /usr/share/man/hr...
+Checking for stray cats under /var/cache/man/hr...
+Purging old database entries in /usr/share/man/de...
+Processing manual pages under /usr/share/man/de...
+Checking for stray cats under /usr/share/man/de...
+Checking for stray cats under /var/cache/man/de...
+Purging old database entries in /usr/share/man/da...
+Processing manual pages under /usr/share/man/da...
+Checking for stray cats under /usr/share/man/da...
+Checking for stray cats under /var/cache/man/da...
+Purging old database entries in /usr/share/man/ro...
+Processing manual pages under /usr/share/man/ro...
+Checking for stray cats under /usr/share/man/ro...
+Checking for stray cats under /var/cache/man/ro...
+Processing manual pages under /usr/local/man...
+Updating index cache for path `/usr/local/man/man1'. Wait...done.
+Checking for stray cats under /usr/local/man...
+Checking for stray cats under /var/cache/man/oldlocal...
+1 man subdirectory contained newer manual pages.
+1 manual page was added.
+0 stray cats were added.
+3186 old database entries were purged.
+
+rclone v1.69.2 has successfully installed.
+Now run "rclone config" for setup. Check https://rclone.org/docs/ for more details.
+
+cc@node-data-pipeline-project38:~$ sudo sed -i '/^#user_allow_other/s/^#//' /etc/fuse.conf
+cc@node-data-pipeline-project38:~$ mkdir -p ~/.config/rclone
+nano  ~/.config/rclone/rclone.conf
+cc@node-data-pipeline-project38:~$ rclone lsd chi_uc:
+    97016427 2000-01-01 00:00:00         3 data_project6
+         780 2000-01-01 00:00:00         2 leximind_mopdel
+ 16136165839 2000-01-01 00:00:00        23 leximind_project6
+   475590668 2000-01-01 00:00:00         5 loan-default-data
+           0 2000-01-01 00:00:00         0 mlflow-bucket
+   720184241 2000-01-01 00:00:00      4485 object-data-persistent-storage-group34
+           0 2000-01-01 00:00:00         0 object-data-team27
+           0 2000-01-01 00:00:00         0 object-data_project4
+           0 2000-01-01 00:00:00         0 object-persist-group30
+  2749736354 2000-01-01 00:00:00     18547 object-persist-group34
+ 27042514027 2000-01-01 00:00:00      3656 object-persist-mlops-project22
+ 14205777467 2000-01-01 00:00:00       334 object-persist-mlops-project22_segments
+  8665151046 2000-01-01 00:00:00        21 object-persist-project17
+           0 2000-01-01 00:00:00         1 object-persist-project32
+ 31415376769 2000-01-01 00:00:00         6 object-persist-project32_segments
+           0 2000-01-01 00:00:00         0 object-persist-project38
+           0 2000-01-01 00:00:00         0 object-persist-project43
+  5557175015 2000-01-01 00:00:00    599757 object-persist-sbb9447-project54
+   441438251 2000-01-01 00:00:00        11 object-store-persist-group36
+   970997697 2000-01-01 00:00:00         4 object-store_project4
+           0 2000-01-01 00:00:00         0 object_storage_dataset_project54
+           0 2000-01-01 00:00:00         0 objectdata-project42
+           0 2000-01-01 00:00:00         1 objectstore
+ 31415376769 2000-01-01 00:00:00         6 objectstore_segments
+ 16347233884 2000-01-01 00:00:00        22 project6_model
+           0 2000-01-01 00:00:00         0 trial
+cc@node-data-pipeline-project38:~$ mkdir -p ~/.kaggle
+mv ~/kaggle.json ~/.kaggle/kaggle.json
+chmod 600 ~/.kaggle/kaggle.json
+cc@node-data-pipeline-project38:~$ cd MLOps/data_pipeline/
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ ls
+docker  scripts
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ mkdir -p ~/MLOps/data_pipeline/kaggle
+mv ~/.kaggle/kaggle.json ~/MLOps/data_pipeline/kaggle/kaggle.json
+chmod 600 ~/MLOps/data_pipeline/kaggle/kaggle.json
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd ~/MLOps
+cc@node-data-pipeline-project38:~/MLOps$ git pull
+remote: Enumerating objects: 8, done.
+remote: Counting objects: 100% (8/8), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 5 (delta 2), reused 5 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 1.02 KiB | 262.00 KiB/s, done.
+From https://github.com/exploring-curiosity/MLOps
+   c1ef263..780178b  main       -> origin/main
+Updating c1ef263..780178b
+Fast-forward
+ data_pipeline/docker/docker-compose-etl-download.yaml | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
+ create mode 100644 data_pipeline/docker/docker-compose-etl-download.yaml
+cc@node-data-pipeline-project38:~/MLOps$ cd ~/MLOps/data_pipeline
+export RCLONE_CONTAINER=object-persist-project38
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+[+] Creating 2/2
+ ✔ Network docker_default          Created                                                                                                                                                             0.3s 
+ ✔ Volume "docker_birdclef_block"  Created                                                                                                                                                             0.0s 
+[+] Running 8/8
+ ✔ extract-download Pulled                                                                                                                                                                            34.2s 
+   ✔ cf05a52c0235 Pull complete                                                                                                                                                                        5.2s 
+   ✔ 63964a8518f5 Pull complete                                                                                                                                                                        6.8s 
+   ✔ ca513cad200b Pull complete                                                                                                                                                                       12.8s 
+   ✔ c187b51b626e Pull complete                                                                                                                                                                       30.3s 
+   ✔ d088dc1e56f8 Pull complete                                                                                                                                                                       30.9s 
+   ✔ 52f7ba6af90d Pull complete                                                                                                                                                                       33.1s 
+   ✔ 77802a86d570 Pull complete                                                                                                                                                                       33.1s 
+Error response from daemon: failed to populate volume: error while mounting volume '/var/lib/docker/volumes/docker_birdclef_block/_data': failed to mount local volume: mount /mnt/block:/var/lib/docker/volumes/docker_birdclef_block/_data, flags: 0x1000: no such file or directory
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ # 1. Make sure the block device exists
+lsblk
+# You should see /dev/vdb and /dev/vdb1 if you’ve already partitioned it.
+
+# 2. If not already formatted (do this ONLY ONCE after creating volume)
+sudo parted -s /dev/vdb mklabel gpt
+sudo parted -s /dev/vdb mkpart primary ext4 0% 100%
+sudo mkfs.ext4 /dev/vdb1
+
+# 3. Create the mount point and mount it
+sudo mkdir -p /mnt/block
+sudo mount /dev/vdb1 /mnt/block
+
+# 4. Set ownership so Docker can write to it
+sudo chown -R cc /mnt/block
+sudo chgrp -R cc /mnt/block
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+vda    253:0    0   40G  0 disk 
+├─vda1 253:1    0  550M  0 part /boot/efi
+├─vda2 253:2    0    8M  0 part 
+└─vda3 253:3    0 39.5G  0 part /
+Error: Could not stat device /dev/vdb - No such file or directory.
+Error: Could not stat device /dev/vdb - No such file or directory.
+mke2fs 1.47.0 (5-Feb-2023)
+The file /dev/vdb1 does not exist and no size was specified.
+mount: /mnt/block: special device /dev/vdb1 does not exist.
+       dmesg(1) may have more information after failed mount system call.
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ lsblk
+NAME   MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+vda    253:0    0   40G  0 disk 
+├─vda1 253:1    0  550M  0 part /boot/efi
+├─vda2 253:2    0    8M  0 part 
+└─vda3 253:3    0 39.5G  0 part /
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ sudo parted -s /dev/vdb mklabel gpt
+sudo parted -s /dev/vdb mkpart primary ext4 0% 100%
+sudo mkfs.ext4 /dev/vdb1
+Error: Could not stat device /dev/vdb - No such file or directory.
+Error: Could not stat device /dev/vdb - No such file or directory.
+mke2fs 1.47.0 (5-Feb-2023)
+The file /dev/vdb1 does not exist and no size was specified.
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd ~/MLOps/
+cc@node-data-pipeline-project38:~/MLOps$ git pull
+remote: Enumerating objects: 8, done.
+remote: Counting objects: 100% (8/8), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 5 (delta 2), reused 5 (delta 2), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 1.01 KiB | 258.00 KiB/s, done.
+From https://github.com/exploring-curiosity/MLOps
+   780178b..1a73e9b  main       -> origin/main
+Updating 780178b..1a73e9b
+Fast-forward
+ data_pipeline/docker/{docker-compose-etl-download.yaml => docker-compose-etl-download-upload.yaml} | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
+ rename data_pipeline/docker/{docker-compose-etl-download.yaml => docker-compose-etl-download-upload.yaml} (82%)
+cc@node-data-pipeline-project38:~/MLOps$ cd ~/MLOps/data_pipeline/
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ ls
+docker  kaggle  scripts
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+[+] Creating 1/1
+ ✔ Volume "docker_birdclef_root"  Created                                                                                                                                                              0.0s 
+[INFO] Installing Kaggle CLI...
+WARNING: The directory '/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+ERROR: Could not install packages due to an OSError: [Errno 13] Permission denied: '/.local'
+Check the permissions.
+
+
+[notice] A new release of pip is available: 24.0 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd ~/MLOps/
+cc@node-data-pipeline-project38:~/MLOps$ git pull
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 5 (delta 3), reused 5 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 579 bytes | 144.00 KiB/s, done.
+From https://github.com/exploring-curiosity/MLOps
+   1a73e9b..9dd3994  main       -> origin/main
+Updating 1a73e9b..9dd3994
+Fast-forward
+ data_pipeline/docker/docker-compose-etl-download-upload.yaml | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+cc@node-data-pipeline-project38:~/MLOps$ cd data_pipeline/
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-extract-download-run-e66d93b7209f]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Creating virtual environment...
+[INFO] Installing Kaggle CLI...
+Collecting kaggle
+  Downloading kaggle-1.7.4.5-py3-none-any.whl.metadata (16 kB)
+Collecting bleach (from kaggle)
+  Downloading bleach-6.2.0-py3-none-any.whl.metadata (30 kB)
+Collecting certifi>=14.05.14 (from kaggle)
+  Downloading certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+Collecting charset-normalizer (from kaggle)
+  Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+Collecting idna (from kaggle)
+  Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting protobuf (from kaggle)
+  Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl.metadata (593 bytes)
+Collecting python-dateutil>=2.5.3 (from kaggle)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting python-slugify (from kaggle)
+  Downloading python_slugify-8.0.4-py2.py3-none-any.whl.metadata (8.5 kB)
+Collecting requests (from kaggle)
+  Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+Requirement already satisfied: setuptools>=21.0.0 in /tmp/venv/lib/python3.11/site-packages (from kaggle) (65.5.0)
+Collecting six>=1.10 (from kaggle)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting text-unidecode (from kaggle)
+  Downloading text_unidecode-1.3-py2.py3-none-any.whl.metadata (2.4 kB)
+Collecting tqdm (from kaggle)
+  Downloading tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.7/57.7 kB 25.5 MB/s eta 0:00:00
+Collecting urllib3>=1.15.1 (from kaggle)
+  Downloading urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting webencodings (from kaggle)
+  Downloading webencodings-0.5.1-py2.py3-none-any.whl.metadata (2.1 kB)
+Downloading kaggle-1.7.4.5-py3-none-any.whl (181 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 181.2/181.2 kB 10.2 MB/s eta 0:00:00
+Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 159.6/159.6 kB 12.3 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 14.4 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 128.7/128.7 kB 17.8 MB/s eta 0:00:00
+Downloading bleach-6.2.0-py3-none-any.whl (163 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 163.4/163.4 kB 20.0 MB/s eta 0:00:00
+Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (147 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 147.3/147.3 kB 21.1 MB/s eta 0:00:00
+Downloading idna-3.10-py3-none-any.whl (70 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 149.8 MB/s eta 0:00:00
+Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl (316 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 316.2/316.2 kB 19.9 MB/s eta 0:00:00
+Downloading python_slugify-8.0.4-py2.py3-none-any.whl (10 kB)
+Downloading text_unidecode-1.3-py2.py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.2/78.2 kB 137.5 MB/s eta 0:00:00
+Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 111.9 MB/s eta 0:00:00
+Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.5/78.5 kB 146.5 MB/s eta 0:00:00
+Downloading webencodings-0.5.1-py2.py3-none-any.whl (11 kB)
+Installing collected packages: webencodings, text-unidecode, urllib3, tqdm, six, python-slugify, protobuf, idna, charset-normalizer, certifi, bleach, requests, python-dateutil, kaggle
+Successfully installed bleach-6.2.0 certifi-2025.4.26 charset-normalizer-3.4.2 idna-3.10 kaggle-1.7.4.5 protobuf-6.30.2 python-dateutil-2.9.0.post0 python-slugify-8.0.4 requests-2.32.3 six-1.17.0 text-unidecode-1.3 tqdm-4.67.1 urllib3-2.4.0 webencodings-0.5.1
+
+[notice] A new release of pip is available: 24.0 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+[INFO] Downloading dataset...
+mkdir: cannot create directory ‘birdclef-2025’: Permission denied
+^[[C^[[B^[[D^[[D^[[D
+
+^CUser cancelled operation
+unzip:  cannot find or open birdclef-2025.zip, birdclef-2025.zip.zip or birdclef-2025.zip.ZIP.
+[INFO] Contents of /data/birdclef-2025:
+ls: cannot access '/data/birdclef-2025': No such file or directory
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ #!/bin/bash
+
+echo "[INFO] Stopping all containers..."
+docker stop $(docker ps -aq) 2>/dev/null
+
+echo "[INFO] Removing all containers..."
+docker rm $(docker ps -aq) 2>/dev/null
+
+echo "[INFO] Removing all unused volumes..."
+docker volume prune -f
+
+echo "[INFO] Removing all dangling images..."
+docker image prune -f
+
+echo "[INFO] Removing entire volume data directory..."
+sudo rm -rf /var/lib/docker/volumes
+
+echo "[INFO] Clean-up complete."
+df -h
+[INFO] Stopping all containers...
+c345488b8d1b
+57fac1739cb4
+[INFO] Removing all containers...
+c345488b8d1b
+57fac1739cb4
+[INFO] Removing all unused volumes...
+Total reclaimed space: 0B
+[INFO] Removing all dangling images...
+Total reclaimed space: 0B
+[INFO] Removing entire volume data directory...
+[INFO] Clean-up complete.
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           3.2G  1.2M  3.2G   1% /run
+/dev/vda3        37G  4.5G   31G  13% /
+tmpfs            16G     0   16G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda1       549M  184K  549M   1% /boot/efi
+tmpfs           3.2G   12K  3.2G   1% /run/user/1000
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd ~/MLOps/
+cc@node-data-pipeline-project38:~/MLOps$ git pull
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 5 (delta 3), reused 5 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 570 bytes | 190.00 KiB/s, done.
+From https://github.com/exploring-curiosity/MLOps
+   9dd3994..8219a0e  main       -> origin/main
+Updating 9dd3994..8219a0e
+Fast-forward
+ data_pipeline/docker/docker-compose-etl-download-upload.yaml | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+cc@node-data-pipeline-project38:~/MLOps$ cd data_pipeline
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+[+] Creating 1/1
+ ✔ Volume "docker_birdclef_download"  Created                                                                                                                                                          0.0s 
+[INFO] Creating virtualenv...
+[INFO] Installing Kaggle CLI...
+Collecting kaggle
+  Downloading kaggle-1.7.4.5-py3-none-any.whl.metadata (16 kB)
+Collecting bleach (from kaggle)
+  Downloading bleach-6.2.0-py3-none-any.whl.metadata (30 kB)
+Collecting certifi>=14.05.14 (from kaggle)
+  Downloading certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+Collecting charset-normalizer (from kaggle)
+  Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+Collecting idna (from kaggle)
+  Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting protobuf (from kaggle)
+  Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl.metadata (593 bytes)
+Collecting python-dateutil>=2.5.3 (from kaggle)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting python-slugify (from kaggle)
+  Downloading python_slugify-8.0.4-py2.py3-none-any.whl.metadata (8.5 kB)
+Collecting requests (from kaggle)
+  Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+Requirement already satisfied: setuptools>=21.0.0 in /tmp/venv/lib/python3.11/site-packages (from kaggle) (65.5.0)
+Collecting six>=1.10 (from kaggle)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting text-unidecode (from kaggle)
+  Downloading text_unidecode-1.3-py2.py3-none-any.whl.metadata (2.4 kB)
+Collecting tqdm (from kaggle)
+  Downloading tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.7/57.7 kB 58.1 MB/s eta 0:00:00
+Collecting urllib3>=1.15.1 (from kaggle)
+  Downloading urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting webencodings (from kaggle)
+  Downloading webencodings-0.5.1-py2.py3-none-any.whl.metadata (2.1 kB)
+Downloading kaggle-1.7.4.5-py3-none-any.whl (181 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 181.2/181.2 kB 14.4 MB/s eta 0:00:00
+Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 159.6/159.6 kB 137.2 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 123.1 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 128.7/128.7 kB 95.2 MB/s eta 0:00:00
+Downloading bleach-6.2.0-py3-none-any.whl (163 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 163.4/163.4 kB 153.4 MB/s eta 0:00:00
+Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (147 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 147.3/147.3 kB 127.4 MB/s eta 0:00:00
+Downloading idna-3.10-py3-none-any.whl (70 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 110.5 MB/s eta 0:00:00
+Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl (316 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 316.2/316.2 kB 131.3 MB/s eta 0:00:00
+Downloading python_slugify-8.0.4-py2.py3-none-any.whl (10 kB)
+Downloading text_unidecode-1.3-py2.py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.2/78.2 kB 98.9 MB/s eta 0:00:00
+Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 90.7 MB/s eta 0:00:00
+Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.5/78.5 kB 103.4 MB/s eta 0:00:00
+Downloading webencodings-0.5.1-py2.py3-none-any.whl (11 kB)
+Installing collected packages: webencodings, text-unidecode, urllib3, tqdm, six, python-slugify, protobuf, idna, charset-normalizer, certifi, bleach, requests, python-dateutil, kaggle
+Successfully installed bleach-6.2.0 certifi-2025.4.26 charset-normalizer-3.4.2 idna-3.10 kaggle-1.7.4.5 protobuf-6.30.2 python-dateutil-2.9.0.post0 python-slugify-8.0.4 requests-2.32.3 six-1.17.0 text-unidecode-1.3 tqdm-4.67.1 urllib3-2.4.0 webencodings-0.5.1
+
+[notice] A new release of pip is available: 24.0 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+[INFO] Downloading dataset...
+mkdir: cannot create directory ‘/data/birdclef-2025’: Permission denied
+^CUser cancelled operation
+unzip:  cannot find or open birdclef-2025.zip, birdclef-2025.zip.zip or birdclef-2025.zip.ZIP.
+[INFO] Download complete. Contents:
+ls: cannot access '/data/birdclef-2025': No such file or directory
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd ~/MLOps/
+cc@node-data-pipeline-project38:~/MLOps$ git pull
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 5 (delta 3), reused 5 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 717 bytes | 239.00 KiB/s, done.
+From https://github.com/exploring-curiosity/MLOps
+   8219a0e..386e45d  main       -> origin/main
+Updating 8219a0e..386e45d
+Fast-forward
+ data_pipeline/docker/docker-compose-etl-download-upload.yaml | 36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
+cc@node-data-pipeline-project38:~/MLOps$ cd data_pipeline/
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-extract-download-run-3dfefda1eb2a]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[+] Creating 1/1
+ ✔ Volume "docker_birdclef_volume"  Created                                                                                                                                                            0.0s 
+[INFO] Creating download directory...
+mkdir: cannot create directory ‘workspace_data’: Permission denied
+[INFO] Creating virtualenv...
+[INFO] Installing Kaggle CLI...
+Collecting kaggle
+  Downloading kaggle-1.7.4.5-py3-none-any.whl.metadata (16 kB)
+Collecting bleach (from kaggle)
+  Downloading bleach-6.2.0-py3-none-any.whl.metadata (30 kB)
+Collecting certifi>=14.05.14 (from kaggle)
+  Downloading certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+Collecting charset-normalizer (from kaggle)
+  Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+Collecting idna (from kaggle)
+  Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting protobuf (from kaggle)
+  Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl.metadata (593 bytes)
+Collecting python-dateutil>=2.5.3 (from kaggle)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting python-slugify (from kaggle)
+  Downloading python_slugify-8.0.4-py2.py3-none-any.whl.metadata (8.5 kB)
+Collecting requests (from kaggle)
+  Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+Requirement already satisfied: setuptools>=21.0.0 in /tmp/venv/lib/python3.11/site-packages (from kaggle) (65.5.0)
+Collecting six>=1.10 (from kaggle)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting text-unidecode (from kaggle)
+  Downloading text_unidecode-1.3-py2.py3-none-any.whl.metadata (2.4 kB)
+Collecting tqdm (from kaggle)
+  Downloading tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.7/57.7 kB 119.3 MB/s eta 0:00:00
+Collecting urllib3>=1.15.1 (from kaggle)
+  Downloading urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting webencodings (from kaggle)
+  Downloading webencodings-0.5.1-py2.py3-none-any.whl.metadata (2.1 kB)
+Downloading kaggle-1.7.4.5-py3-none-any.whl (181 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 181.2/181.2 kB 13.9 MB/s eta 0:00:00
+Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 159.6/159.6 kB 12.0 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 13.8 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 128.7/128.7 kB 16.3 MB/s eta 0:00:00
+Downloading bleach-6.2.0-py3-none-any.whl (163 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 163.4/163.4 kB 18.8 MB/s eta 0:00:00
+Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (147 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 147.3/147.3 kB 19.2 MB/s eta 0:00:00
+Downloading idna-3.10-py3-none-any.whl (70 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 108.1 MB/s eta 0:00:00
+Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl (316 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 316.2/316.2 kB 19.0 MB/s eta 0:00:00
+Downloading python_slugify-8.0.4-py2.py3-none-any.whl (10 kB)
+Downloading text_unidecode-1.3-py2.py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.2/78.2 kB 97.9 MB/s eta 0:00:00
+Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 144.0 MB/s eta 0:00:00
+Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.5/78.5 kB 106.2 MB/s eta 0:00:00
+Downloading webencodings-0.5.1-py2.py3-none-any.whl (11 kB)
+Installing collected packages: webencodings, text-unidecode, urllib3, tqdm, six, python-slugify, protobuf, idna, charset-normalizer, certifi, bleach, requests, python-dateutil, kaggle
+Successfully installed bleach-6.2.0 certifi-2025.4.26 charset-normalizer-3.4.2 idna-3.10 kaggle-1.7.4.5 protobuf-6.30.2 python-dateutil-2.9.0.post0 python-slugify-8.0.4 requests-2.32.3 six-1.17.0 text-unidecode-1.3 tqdm-4.67.1 urllib3-2.4.0 webencodings-0.5.1
+
+[notice] A new release of pip is available: 24.0 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+[INFO] Downloading BirdCLEF dataset...
+Downloading birdclef-2025.zip to /workspace
+  0%|                                                                                                                                                                           | 0.00/11.5G [00:00<?, ?B/s]
+[Errno 13] Permission denied: '/workspace/birdclef-2025.zip'
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ ls
+docker-compose-etl-download-upload.yaml  docker-compose-etl-offline.yaml  docker-compose-etl.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-extract-download-run-1dd6fa16e237 docker-extract-download-run-3dfefda1eb2a]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Creating workspace/data...
+[INFO] Installing Kaggle CLI in user space...
+WARNING: The directory '/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Collecting kaggle
+  Downloading kaggle-1.7.4.5-py3-none-any.whl.metadata (16 kB)
+Collecting bleach (from kaggle)
+  Downloading bleach-6.2.0-py3-none-any.whl.metadata (30 kB)
+Collecting certifi>=14.05.14 (from kaggle)
+  Downloading certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+Collecting charset-normalizer (from kaggle)
+  Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+Collecting idna (from kaggle)
+  Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting protobuf (from kaggle)
+  Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl.metadata (593 bytes)
+Collecting python-dateutil>=2.5.3 (from kaggle)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting python-slugify (from kaggle)
+  Downloading python_slugify-8.0.4-py2.py3-none-any.whl.metadata (8.5 kB)
+Collecting requests (from kaggle)
+  Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+Requirement already satisfied: setuptools>=21.0.0 in /usr/local/lib/python3.11/site-packages (from kaggle) (65.5.1)
+Collecting six>=1.10 (from kaggle)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting text-unidecode (from kaggle)
+  Downloading text_unidecode-1.3-py2.py3-none-any.whl.metadata (2.4 kB)
+Collecting tqdm (from kaggle)
+  Downloading tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.7/57.7 kB 117.1 MB/s eta 0:00:00
+Collecting urllib3>=1.15.1 (from kaggle)
+  Downloading urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting webencodings (from kaggle)
+  Downloading webencodings-0.5.1-py2.py3-none-any.whl.metadata (2.1 kB)
+Downloading kaggle-1.7.4.5-py3-none-any.whl (181 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 181.2/181.2 kB 12.3 MB/s eta 0:00:00
+Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 159.6/159.6 kB 97.0 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 103.4 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 128.7/128.7 kB 83.5 MB/s eta 0:00:00
+Downloading bleach-6.2.0-py3-none-any.whl (163 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 163.4/163.4 kB 126.4 MB/s eta 0:00:00
+Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (147 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 147.3/147.3 kB 90.9 MB/s eta 0:00:00
+Downloading idna-3.10-py3-none-any.whl (70 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 80.8 MB/s eta 0:00:00
+Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl (316 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 316.2/316.2 kB 11.6 MB/s eta 0:00:00
+Downloading python_slugify-8.0.4-py2.py3-none-any.whl (10 kB)
+Downloading text_unidecode-1.3-py2.py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.2/78.2 kB 78.8 MB/s eta 0:00:00
+Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 81.0 MB/s eta 0:00:00
+Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.5/78.5 kB 87.9 MB/s eta 0:00:00
+Downloading webencodings-0.5.1-py2.py3-none-any.whl (11 kB)
+Installing collected packages: webencodings, text-unidecode, urllib3, tqdm, six, python-slugify, protobuf, idna, charset-normalizer, certifi, bleach, requests, python-dateutil, kaggle
+ERROR: Could not install packages due to an OSError: [Errno 13] Permission denied: '/.local'
+Check the permissions.
+
+
+[notice] A new release of pip is available: 24.0 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] The "PYTHONPATH" variable is not set. Defaulting to a blank string. 
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-extract-download-run-ccc4ae837116 docker-extract-download-run-1dd6fa16e237 docker-extract-download-run-3dfefda1eb2a]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+mkdir: cannot create directory ‘/app/.local’: Permission denied
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           3.2G  1.2M  3.2G   1% /run
+/dev/vda3        37G  4.6G   31G  13% /
+tmpfs            16G     0   16G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda1       549M  184K  549M   1% /boot/efi
+tmpfs           3.2G   12K  3.2G   1% /run/user/1000
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ #!/bin/bash
+
+echo "[!] This will clean up temp files and Docker volumes."
+
+read -p "Are you sure you want to delete ./tmp_download, all exited containers, and unused volumes? [y/N] " confirm
+if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    echo "[INFO] Deleting ./tmp_download..."
+    rm -rf ./tmp_download
+    mkdir -p ./tmp_download
+
+    echo "[INFO] Removing exited containers..."
+    docker container prune -f
+
+    echo "[INFO] Removing unused volumes..."
+    docker volume prune -f
+
+    echo "[✅] Cleanup complete."
+else
+    echo "[ABORTED]"
+fi
+[!] This will clean up temp files and Docker volumes.
+Are you sure you want to delete ./tmp_download, all exited containers, and unused volumes? [y/N] yes
+[ABORTED]
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ #!/bin/bash
+
+echo "[!] This will clean up temp files and Docker volumes."
+
+read -p "Are you sure you want to delete ./tmp_download, all exited containers, and unused volumes? [y/N] " confirm
+if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    echo "[INFO] Deleting ./tmp_download..."
+    rm -rf ./tmp_download
+    mkdir -p ./tmp_download
+
+    echo "[INFO] Removing exited containers..."
+    docker container prune -f
+
+    echo "[INFO] Removing unused volumes..."
+    docker volume prune -f
+
+    echo "[✅] Cleanup complete."
+else
+    echo "[ABORTED]"
+fi
+[!] This will clean up temp files and Docker volumes.
+Are you sure you want to delete ./tmp_download, all exited containers, and unused volumes? [y/N] y
+[INFO] Deleting ./tmp_download...
+[INFO] Removing exited containers...
+Deleted Containers:
+042a33b69df1622abd12df46e2a6102509da0839e877e4f815204b75587e4424
+f1bf2bfeea2547004276890bec11426b2ef3fcaa9d3f9a46e9afbca8fa770ed4
+0cc7035af7e0c06295e8179d6f72e66186091d2124d31756835d171dafcb960b
+12b92965a74c8d19fb61da5dbc9f9b128588737db707ae709b8fef72e966c992
+
+Total reclaimed space: 66.14MB
+[INFO] Removing unused volumes...
+Total reclaimed space: 0B
+[✅] Cleanup complete.
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+[INFO] Installing Kaggle CLI...
+WARNING: The directory '/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+ERROR: Could not install packages due to an OSError: [Errno 13] Permission denied: '/.local'
+Check the permissions.
+
+
+[notice] A new release of pip is available: 24.0 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ~/MLOps/data_pipeline
+docker compose -f docker/docker-compose-etl-download.yaml run extract-download
+open /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download.yaml: no such file or directory
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-extract-download-run-93ee27c4f120]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Installing Kaggle CLI into local directory...
+Defaulting to user installation because normal site-packages is not writeable
+Looking in links: /tmp/tmpakmb5sjg
+Requirement already satisfied: setuptools in /usr/local/lib/python3.11/site-packages (65.5.1)
+Requirement already satisfied: pip in /usr/local/lib/python3.11/site-packages (24.0)
+WARNING: The directory '/workspace/.cache/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Collecting kaggle
+  Downloading kaggle-1.7.4.5-py3-none-any.whl.metadata (16 kB)
+Collecting bleach (from kaggle)
+  Downloading bleach-6.2.0-py3-none-any.whl.metadata (30 kB)
+Collecting certifi>=14.05.14 (from kaggle)
+  Downloading certifi-2025.4.26-py3-none-any.whl.metadata (2.5 kB)
+Collecting charset-normalizer (from kaggle)
+  Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)
+Collecting idna (from kaggle)
+  Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)
+Collecting protobuf (from kaggle)
+  Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl.metadata (593 bytes)
+Collecting python-dateutil>=2.5.3 (from kaggle)
+  Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting python-slugify (from kaggle)
+  Downloading python_slugify-8.0.4-py2.py3-none-any.whl.metadata (8.5 kB)
+Collecting requests (from kaggle)
+  Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)
+Requirement already satisfied: setuptools>=21.0.0 in /usr/local/lib/python3.11/site-packages (from kaggle) (65.5.1)
+Collecting six>=1.10 (from kaggle)
+  Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting text-unidecode (from kaggle)
+  Downloading text_unidecode-1.3-py2.py3-none-any.whl.metadata (2.4 kB)
+Collecting tqdm (from kaggle)
+  Downloading tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 57.7/57.7 kB 83.1 MB/s eta 0:00:00
+Collecting urllib3>=1.15.1 (from kaggle)
+  Downloading urllib3-2.4.0-py3-none-any.whl.metadata (6.5 kB)
+Collecting webencodings (from kaggle)
+  Downloading webencodings-0.5.1-py2.py3-none-any.whl.metadata (2.1 kB)
+Downloading kaggle-1.7.4.5-py3-none-any.whl (181 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 181.2/181.2 kB 12.8 MB/s eta 0:00:00
+Downloading certifi-2025.4.26-py3-none-any.whl (159 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 159.6/159.6 kB 122.7 MB/s eta 0:00:00
+Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 229.9/229.9 kB 112.5 MB/s eta 0:00:00
+Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading urllib3-2.4.0-py3-none-any.whl (128 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 128.7/128.7 kB 91.9 MB/s eta 0:00:00
+Downloading bleach-6.2.0-py3-none-any.whl (163 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 163.4/163.4 kB 95.7 MB/s eta 0:00:00
+Downloading charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (147 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 147.3/147.3 kB 137.1 MB/s eta 0:00:00
+Downloading idna-3.10-py3-none-any.whl (70 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 70.4/70.4 kB 97.8 MB/s eta 0:00:00
+Downloading protobuf-6.30.2-cp39-abi3-manylinux2014_x86_64.whl (316 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 316.2/316.2 kB 128.2 MB/s eta 0:00:00
+Downloading python_slugify-8.0.4-py2.py3-none-any.whl (10 kB)
+Downloading text_unidecode-1.3-py2.py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.2/78.2 kB 80.7 MB/s eta 0:00:00
+Downloading requests-2.32.3-py3-none-any.whl (64 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 64.9/64.9 kB 88.9 MB/s eta 0:00:00
+Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 78.5/78.5 kB 83.2 MB/s eta 0:00:00
+Downloading webencodings-0.5.1-py2.py3-none-any.whl (11 kB)
+Installing collected packages: webencodings, text-unidecode, urllib3, tqdm, six, python-slugify, protobuf, idna, charset-normalizer, certifi, bleach, requests, python-dateutil, kaggle
+ERROR: Could not install packages due to an OSError: [Errno 13] Permission denied: '/workspace/.local'
+Check the permissions.
+
+
+[notice] A new release of pip is available: 24.0 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker container prune -f
+docker volume prune -f
+docker system df
+Deleted Containers:
+ba0ee75f61dffdf58989b4b50d891eaff26015d1931ab9cce9aae24b65e8b55d
+b1eb46246af3171babf4b51171021bc9c8a5d649c46a5aca627be25e77b33d5d
+
+Total reclaimed space: 0B
+Total reclaimed space: 0B
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          1         0         1.012GB   1.012GB (100%)
+Containers      0         0         0B        0B
+Local Volumes   3         0         0B        0B
+Build Cache     0         0         0B        0B
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run extract-download
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+[+] Creating 1/1
+ ✔ Volume "docker_etl_volume"  Created                                                                                                                                                                 0.0s 
+[INFO] Installing Kaggle CLI...
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+
+[notice] A new release of pip is available: 24.0 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+[INFO] Downloading BirdCLEF 2025 dataset...
+Downloading birdclef-2025.zip to /workspace/tmp_download/birdclef-2025
+100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍| 11.5G/11.5G [00:12<00:00, 865MB/s]
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 11.5G/11.5G [00:12<00:00, 998MB/s]
+[INFO] Listing extracted files:
+total 5.3M
+-rw-r--r--   1 root root  232 Mar 10 16:58 recording_location.txt
+-rw-r--r--   1 root root  15K Mar 10 16:58 sample_submission.csv
+-rw-r--r--   1 root root  12K Mar 10 16:58 taxonomy.csv
+drwxr-xr-x   2 root root 4.0K May 10 02:12 test_soundscapes
+-rw-r--r--   1 root root 4.8M Mar 10 16:58 train.csv
+drwxr-xr-x 208 root root 4.0K May 10 02:13 train_audio
+drwxr-xr-x   2 root root 468K May 10 02:13 train_soundscapes
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run upload-raw
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-extract-download-run-dd9b9f769078]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[+] Running 6/6
+ ✔ upload-raw Pulled                                                                                                                                                                                   3.8s 
+   ✔ f18232174bc9 Pull complete                                                                                                                                                                        0.7s 
+   ✔ 5ea8dd523185 Pull complete                                                                                                                                                                        1.0s 
+   ✔ 7579bd741e66 Pull complete                                                                                                                                                                        2.7s 
+   ✔ df4e00eb7ae3 Pull complete                                                                                                                                                                        2.7s 
+   ✔ 85ee55147108 Pull complete                                                                                                                                                                        2.8s 
+[INFO] Uploading to object store: chi_uc:object-persist-project38/raw
+2025/05/10 02:14:43 NOTICE: Config file "/config/rclone/rclone.conf" not found - using defaults
+2025/05/10 02:14:43 CRITICAL: Failed to create file system for "chi_uc:object-persist-project38/raw/train_audio": didn't find section in config file ("chi_uc")
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ mkdir -p ~/MLOps/data_pipeline/config/rclone
+cp ~/.config/rclone/rclone.conf ~/MLOps/data_pipeline/config/rclone/
+cp: cannot create regular file '/home/cc/MLOps/data_pipeline/config/rclone/rclone.conf': Permission denied
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run upload-raw
+validating /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: (root) Additional property upload-raw is not allowed
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run upload-raw
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-upload-raw-run-040bbef6bb99 docker-extract-download-run-dd9b9f769078]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Uploading to object store: chi_uc:object-persist-project38/raw
+2025/05/10 02:21:32 ERROR : Local file system at /data/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:21:32 ERROR : Attempt 1/3 failed with 1 errors and: directory not found
+2025/05/10 02:21:32 ERROR : Local file system at /data/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:21:32 ERROR : Attempt 2/3 failed with 1 errors and: directory not found
+2025/05/10 02:21:32 ERROR : Local file system at /data/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:21:32 ERROR : Attempt 3/3 failed with 1 errors and: directory not found
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Errors:                 1 (retrying may help)
+Elapsed time:         0.3s
+2025/05/10 02:21:32 NOTICE: Failed to copy: directory not found
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ ls
+config  docker  kaggle  scripts  tmp_download
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd tmp_download
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/tmp_download$ ls
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/tmp_download$ cd ~/MLOps/data_pipeline/
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run upload-raw
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-upload-raw-run-531700d062ea docker-upload-raw-run-040bbef6bb99 docker-extract-download-run-dd9b9f769078]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Uploading to object store: chi_uc:object-persist-project38/raw
+2025/05/10 02:29:01 ERROR : Local file system at /workspace/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:29:01 ERROR : Attempt 1/3 failed with 1 errors and: directory not found
+2025/05/10 02:29:02 ERROR : Local file system at /workspace/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:29:02 ERROR : Attempt 2/3 failed with 1 errors and: directory not found
+2025/05/10 02:29:02 ERROR : Local file system at /workspace/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:29:02 ERROR : Attempt 3/3 failed with 1 errors and: directory not found
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Errors:                 1 (retrying may help)
+Elapsed time:         0.3s
+2025/05/10 02:29:02 NOTICE: Failed to copy: directory not found
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run upload-raw
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-upload-raw-run-13d16746d4c5 docker-upload-raw-run-531700d062ea docker-upload-raw-run-040bbef6bb99 docker-extract-download-run-dd9b9f769078]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Uploading to object store: chi_uc:object-persist-project38/raw
+2025/05/10 02:30:25 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:30:25 ERROR : Attempt 1/3 failed with 1 errors and: directory not found
+2025/05/10 02:30:25 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:30:25 ERROR : Attempt 2/3 failed with 1 errors and: directory not found
+2025/05/10 02:30:25 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:30:25 ERROR : Attempt 3/3 failed with 1 errors and: directory not found
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Errors:                 1 (retrying may help)
+Elapsed time:         0.3s
+2025/05/10 02:30:25 NOTICE: Failed to copy: directory not found
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd ~
+cc@node-data-pipeline-project38:~$ ls
+MLOps  openrc
+cc@node-data-pipeline-project38:~$ cd MLOps
+cc@node-data-pipeline-project38:~/MLOps$ ls
+LICENSE  README.md  Temp  assets  continous_X_pipeline  continous_pipeline  data_pipeline  model_serving  model_train
+cc@node-data-pipeline-project38:~/MLOps$ cd data_pipeline
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run upload-raw
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-upload-raw-run-a81ab73c64cd docker-upload-raw-run-13d16746d4c5 docker-upload-raw-run-531700d062ea docker-upload-raw-run-040bbef6bb99 docker-extract-download-run-dd9b9f769078]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Listing extracted files:
+total 0      
+[INFO] Uploading to object store: chi_uc:object-persist-project38/raw
+2025/05/10 02:42:50 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:42:50 ERROR : Attempt 1/3 failed with 1 errors and: directory not found
+2025/05/10 02:42:50 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:42:50 ERROR : Attempt 2/3 failed with 1 errors and: directory not found
+2025/05/10 02:42:50 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:42:50 ERROR : Attempt 3/3 failed with 1 errors and: directory not found
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Errors:                 1 (retrying may help)
+Elapsed time:         0.2s
+2025/05/10 02:42:50 NOTICE: Failed to copy: directory not found
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run upload-raw
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-upload-raw-run-b004bdb6eaed docker-upload-raw-run-a81ab73c64cd docker-upload-raw-run-13d16746d4c5 docker-upload-raw-run-531700d062ea docker-upload-raw-run-040bbef6bb99 docker-extract-download-run-dd9b9f769078]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Listing extracted files:
+total 0      
+[INFO] Uploading to object store: chi_uc:object-persist-project38/raw
+2025/05/10 02:47:29 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:47:29 ERROR : Attempt 1/3 failed with 1 errors and: directory not found
+2025/05/10 02:47:29 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:47:29 ERROR : Attempt 2/3 failed with 1 errors and: directory not found
+2025/05/10 02:47:29 ERROR : Local file system at /workspace/tmp_download/birdclef-2025/train_audio: error reading source root directory: directory not found
+2025/05/10 02:47:29 ERROR : Attempt 3/3 failed with 1 errors and: directory not found
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Errors:                 1 (retrying may help)
+Elapsed time:         0.2s
+2025/05/10 02:47:29 NOTICE: Failed to copy: directory not found
+
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd docker
+-bash: cd: docker: No such file or directory
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ cd ..
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ docker compose -f docker/docker-compose-etl-download-upload.yaml run upload-raw
+WARN[0000] /home/cc/MLOps/data_pipeline/docker/docker-compose-etl-download-upload.yaml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+WARN[0000] Found orphan containers ([docker-upload-raw-run-06e440c5299d docker-upload-raw-run-b004bdb6eaed docker-upload-raw-run-a81ab73c64cd docker-upload-raw-run-13d16746d4c5 docker-upload-raw-run-531700d062ea docker-upload-raw-run-040bbef6bb99 docker-extract-download-run-dd9b9f769078]) for this project. If you removed or renamed this service in your compose file, you can run this command with the --remove-orphans flag to clean it up. 
+[INFO] Listing extracted files:
+total 5M     
+-rw-r--r--    1 root     root         232 Mar 10 16:58 recording_location.txt
+-rw-r--r--    1 root     root       14.8K Mar 10 16:58 sample_submission.csv
+-rw-r--r--    1 root     root       12.0K Mar 10 16:58 taxonomy.csv
+drwxr-xr-x    2 root     root        4.0K May 10 02:12 test_soundscapes
+-rw-r--r--    1 root     root        4.8M Mar 10 16:58 train.csv
+drwxr-xr-x  208 root     root        4.0K May 10 02:13 train_audio
+drwxr-xr-x    2 root     root      468.0K May 10 02:13 train_soundscapes
+[INFO] Uploading to object store: chi_uc:object-persist-project38/raw
+Transferred:   	    7.225 GiB / 7.225 GiB, 100%, 582.637 KiB/s, ETA 0s
+Transferred:        28564 / 28564, 100%
+Elapsed time:   2h16m10.8s
+[INFO] Upload complete!
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline$ cd docker
+cc@node-data-pipeline-project38:~/MLOps/data_pipeline/docker$ nano docker-compose-etl-download-upload.yaml
+
+
+  GNU nano 7.2                                                                        docker-compose-etl-download-upload.yaml                                                                                 
+  etl_volume: {}
 
 services:
+
   extract-download:
     container_name: etl_download_birdclef
     image: python:3.11
-    user: 1000:1000
+    user: root
     environment:
-      - KAGGLE_CONFIG_DIR=/workspace/kaggle
+      - KAGGLE_CONFIG_DIR=/root/.kaggle
     volumes:
-      - birdclef_volume:/workspace
-      - ../kaggle:/workspace/kaggle:ro
-    working_dir: /workspace
+      - etl_volume:/workspace/tmp_download
+      - ../kaggle:/root/.kaggle:ro
+    working_dir: /workspace/tmp_download
     command: >
       bash -c "
         set -e
-        echo '[INFO] Creating download directory...'
-        mkdir -p workspace_data && cd workspace_data
-
-        echo '[INFO] Creating virtualenv...'
-        python -m venv /tmp/venv && source /tmp/venv/bin/activate
-
         echo '[INFO] Installing Kaggle CLI...'
-        pip install --no-cache-dir kaggle
+        pip install kaggle --quiet
 
-        echo '[INFO] Downloading BirdCLEF dataset...'
+        echo '[INFO] Downloading BirdCLEF 2025 dataset...'
+        mkdir -p birdclef-2025 && cd birdclef-2025
         kaggle competitions download -c birdclef-2025
-        unzip -qq birdclef-2025.zip && rm birdclef-2025.zip
+        unzip -qq birdclef-2025.zip
+        rm birdclef-2025.zip
 
-        echo '[INFO] Final contents:'
-        ls -lh /workspace/workspace_data
+        echo '[INFO] Listing extracted files:'
+        ls -lh /workspace/tmp_download/birdclef-2025
       "
 
   upload-raw:
@@ -40,16 +1080,19 @@ services:
     environment:
       - RCLONE_CONTAINER=object-persist-project38
     volumes:
-      - birdclef_volume:/workspace
-      - ../config/rclone:/root/.config/rclone:ro
+      - etl_volume:/workspace/tmp_download
+      - ~/.config/rclone:/config/rclone:ro
     entrypoint: /bin/sh
     command: >
       -c "
+        echo '[INFO] Listing extracted files:'
+        ls -lh /workspace/tmp_download/birdclef-2025
         set -e
-        echo '[INFO] Uploading raw data from workspace_data to object store...'
-        rclone copy /workspace/workspace_data/train_audio chi_uc:$RCLONE_CONTAINER/raw/train_audio --progress
-        rclone copy /workspace/workspace_data/train.csv chi_uc:$RCLONE_CONTAINER/raw/
-        rclone copy /workspace/workspace_data/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
-        echo '[INFO] Upload complete.'
-        rm -rf /workspace/workspace_data
+        echo '[INFO] Uploading to object store: chi_uc:$RCLONE_CONTAINER/raw'
+
+        rclone copy /workspace/tmp_download/birdclef-2025/train_audio chi_uc:$RCLONE_CONTAINER/raw/train_audio --progress
+        rclone copy /workspace/tmp_download/birdclef-2025/train.csv chi_uc:$RCLONE_CONTAINER/raw/
+        rclone copy /workspace/tmp_download/birdclef-2025/taxonomy.csv chi_uc:$RCLONE_CONTAINER/raw/
+
+        echo '[INFO] Upload complete!'
       "
