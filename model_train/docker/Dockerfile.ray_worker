@@ -3,8 +3,10 @@ FROM rayproject/ray:2.42.1-gpu
 RUN apt-get update \
  && apt-get install -y --no-install-recommends podman unzip curl \
  && rm -rf /var/lib/apt/lists/*
- 
+
 COPY deps/train_requirements.txt /requirements.txt
 RUN pip install --no-cache-dir -r /requirements.txt
 
-COPY TrainingScripts/ /app/TrainingScripts/
+
+WORKDIR /app
+COPY ../TrainingScripts/ ./TrainingScripts/
