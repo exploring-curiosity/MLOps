@@ -4,41 +4,28 @@
   become: yes
   vars:
     argocd_username: "admin"
-    repo_path: "https://github.com/teaching-on-testbeds/gourmetgram-iac.git"
+    repo_path: "https://github.com/exploring-curiosity/MLOps.git"
     app_name: "gourmetgram-platform"
-    app_path: "k8s/platform"
+    app_path: "continous_pipeline/k8s/platform"
     minio_access_key: "your-access-key"
 
   tasks:
-    - name: Prepare block storage mount and subdirectories on node1
-      shell: |
-        # Mount the main block volume if not already mounted
-        mkdir -p /mnt/mydata
-        if ! mountpoint -q /mnt/mydata; then
-        if ! blkid /dev/vdb; then
-          echo "Formatting block volume..."
-          mkfs.ext4 /dev/vdb
-        fi
-        
-        if ! grep -q "/dev/vdb /mnt/mydata" /etc/fstab; then
-          echo "/dev/vdb /mnt/mydata ext4 defaults 0 0" >> /etc/fstab
-        fi
-          mount /mnt/mydata || true
-        fi
 
-        # Create dedicated subdirectories for MinIO and PostgreSQL
-        mkdir -p /mnt/mydata/minio
-        mkdir -p /mnt/mydata/postgres
+    - name: Create Mount Directory
+      command: sudo mkdir -p /mnt/block
 
-        # Set proper permissions
-        chown -R 1000:1000 /mnt/mydata/minio
-        chown -R 1000:1000 /mnt/mydata/postgres
-        chmod 777 /mnt/mydata/minio
-        chmod 777 /mnt/mydata/postgres
-      args:
-        executable: /bin/bash
-      register: mount_result
-      changed_when: mount_result.rc == 0
+    - name: Add Mount
+      command: sudo mkdir -p /mnt/block
+
+    - name: Check if /mnt/block is already mounted
+      command: mountpoint -q /mnt/block
+      register: mount_check
+      ignore_errors: true
+      changed_when: false
+
+    - name: Mount /dev/vdb1 to /mnt/block if not already mounted
+      command: sudo mount /dev/vdb1 /mnt/block
+      when: mount_check.rc != 0
 
     - name: Get ArgoCD admin password from Kubernetes secret
       command: >
@@ -126,8 +113,6 @@
         --helm-set-string minio.externalIP={{ external_ip }} \
         --helm-set-string mlflow.externalIP={{ external_ip }} \
         --helm-set-string grafana.externalIP={{ external_ip }} \
-        --helm-set-string label-studio.externalIP={{ external_ip }} \
-        --helm-set-string prometheus.externalIP={{ external_ip }} \
         --port-forward --port-forward-namespace=argocd \
         --sync-policy automated --self-heal
       register: app_create
@@ -140,8 +125,6 @@
         --helm-set-string minio.externalIP={{ external_ip }} \
         --helm-set-string mlflow.externalIP={{ external_ip }} \
         --helm-set-string grafana.externalIP={{ external_ip }} \
-        --helm-set-string label-studio.externalIP={{ external_ip }} \
-        --helm-set-string prometheus.externalIP={{ external_ip }} \
         --port-forward --port-forward-namespace=argocd
       register: app_update
 

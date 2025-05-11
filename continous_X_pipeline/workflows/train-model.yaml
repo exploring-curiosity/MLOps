@@ -8,6 +8,7 @@ spec:
     parameters:
     - name: train-ip
     - name: eval-ip
+    - name: mlflow-ip
 
   templates:
   - name: training-and-build
@@ -20,6 +21,8 @@ spec:
               value: "{{workflow.parameters.train-ip}}"
             - name: eval-ip
               value: "{{workflow.parameters.eval-ip}}"
+            - name: mlflow-ip
+              value: "{{workflow.parameters.mlflow-ip}}"
       - - name: build-container
           template: trigger-build
           arguments:
@@ -33,6 +36,7 @@ spec:
       parameters:
       - name: train-ip
       - name: eval-ip
+      - name: mlflow-ip
     script:
       image: alpine:3.18
       command: [sh]
@@ -100,7 +104,7 @@ spec:
         #Polling MLFlow
         TERMINAL="FINISHED|FAILED|KILLED"
         while true; do
-          STATUS=$(curl -s "http://129.114.26.212:8000/api/2.0/mlflow/runs/get?run_id=${RUN_ID}"| jq -r '.run.info.status')
+          STATUS=$(curl -s "http://{{inputs.parameters.mlflow-ip}}:8000/api/2.0/mlflow/runs/get?run_id=${RUN_ID}"| jq -r '.run.info.status')
           echo "[INFO] Run ${RUN_ID} status: ${STATUS}" >&2
           case "$STATUS" in
             FINISHED|FAILED|KILLED)
@@ -113,7 +117,7 @@ spec:
         
         # Triggering Model Evaluation
         echo "[INFO] Calling Model Evaluation Endpoint"
-        EVAL_RESPONSE=$(curl --max-time 36000 -f -s -X GET "http://{{inputs.parameters.eval-ip}}:8080/get-version?run_id=${RUN_ID}")
+        EVAL_RESPONSE=$(curl -f -s -X GET "http://{{inputs.parameters.eval-ip}}:8080/get-version?run_id=${RUN_ID}")
         CURL_EXIT_CODE=$?
         echo "[INFO] Evaluation endpoint response was: EVAL_RESPONSE" >&2
         if [ $CURL_EXIT_CODE -ne 0 ]; then
