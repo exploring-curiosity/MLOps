@@ -6,7 +6,8 @@ spec:
   entrypoint: training-and-build
   arguments:
     parameters:
-    - name: endpoint-ip
+    - name: train-ip
+    - name: eval-ip
 
   templates:
   - name: training-and-build
@@ -15,8 +16,10 @@ spec:
           template: call-endpoint
           arguments:
             parameters:
-            - name: endpoint-ip
-              value: "{{workflow.parameters.endpoint-ip}}"
+            - name: train-ip
+              value: "{{workflow.parameters.train-ip}}"
+            - name: eval-ip
+              value: "{{workflow.parameters.eval-ip}}"
       - - name: build-container
           template: trigger-build
           arguments:
@@ -28,12 +31,13 @@ spec:
   - name: call-endpoint
     inputs:
       parameters:
-      - name: endpoint-ip
+      - name: train-ip
+      - name: eval-ip
     script:
       image: alpine:3.18
       command: [sh]
       source: |
-  
+        
         MAX_RETRIES=5
         RETRY_DELAY=3
         i=1
@@ -66,20 +70,26 @@ spec:
 
         # Trigger model training
         echo "[INFO] Triggering model training..." >&2
-        RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:9090/trigger-training)
+        
+        # RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.train-ip}}:9090/trigger-training)
+        # CURL_EXIT_CODE=$?
+        # echo "[INFO] Training endpoint response was: $RESPONSE" >&2
+        # if [ $CURL_EXIT_CODE -ne 0 ]; then
+        #   echo "[ERROR] curl failed with code $CURL_EXIT_CODE" >&2
+        #   exit $CURL_EXIT_CODE
+        # fi
+        
+        RESPONSE=$(curl -f -s -X POST "http://{{inputs.parameters.train-ip}}:9090/train?model_name=resnet50&data_source=train")
         CURL_EXIT_CODE=$?
-
         echo "[INFO] Training endpoint response was: $RESPONSE" >&2
-
-
         if [ $CURL_EXIT_CODE -ne 0 ]; then
           echo "[ERROR] curl failed with code $CURL_EXIT_CODE" >&2
           exit $CURL_EXIT_CODE
         fi
-    
-        #Poll MLFlow continously for Model to Finish Training
+        echo "[INFO] Training endpoint response was: $RESPONSE" >&2
         
-        #Extracting the Run ID from RESPONSE
+        # Poll MLFlow continously for Model to Finish Training
+        # Extracting the Run ID from RESPONSE
         RUN_ID=$(echo "$RESPONSE" | jq -r '.run_id')    
         if [ -z "$RUN_ID" ]; then
           echo "[ERROR] run_id not found in response" >&2
@@ -87,11 +97,10 @@ spec:
         fi
         echo "[INFO] MLflow run ID: $RUN_ID" >&2
         
-        
         #Polling MLFlow
         TERMINAL="FINISHED|FAILED|KILLED"
         while true; do
-          STATUS=$(curl -s "http://129.114.27.116:8000/api/2.0/mlflow/runs/get?run_id=${RUN_ID}"| jq -r '.run.info.status')
+          STATUS=$(curl -s "http://129.114.26.212:8000/api/2.0/mlflow/runs/get?run_id=${RUN_ID}"| jq -r '.run.info.status')
           echo "[INFO] Run ${RUN_ID} status: ${STATUS}" >&2
           case "$STATUS" in
             FINISHED|FAILED|KILLED)
@@ -101,9 +110,19 @@ spec:
           esac
           sleep 10
         done
-       
-        # Extract model version
-        VERSION=$(echo "$RESPONSE" | jq -r '.new_model_version // empty')
+        
+        # Triggering Model Evaluation
+        echo "[INFO] Calling Model Evaluation Endpoint"
+        EVAL_RESPONSE=$(curl --max-time 36000 -f -s -X GET "http://{{inputs.parameters.eval-ip}}:8080/get-version?run_id=${RUN_ID}")
+        CURL_EXIT_CODE=$?
+        echo "[INFO] Evaluation endpoint response was: EVAL_RESPONSE" >&2
+        if [ $CURL_EXIT_CODE -ne 0 ]; then
+          echo "[ERROR] curl failed with code $CURL_EXIT_CODE" >&2
+          exit $CURL_EXIT_CODE
+        fi
+         
+        # Extracting model version
+        VERSION=$(echo "EVAL_RESPONSE" | jq -r '.new_model_version // empty')
 
         if [ -z "$VERSION" ]; then
           echo "[WARN] 'new_model_version' not found in response." >&2

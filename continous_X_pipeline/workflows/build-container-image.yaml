@@ -60,7 +60,8 @@ spec:
 
           while [ $i -le $MAX_RETRIES ]; do
             echo "Attempt $i of $MAX_RETRIES: Cloning repo..."
-            git clone --branch workflow https://github.com/teaching-on-testbeds/gourmetgram.git /mnt/workspace && break
+            # git clone --branch workflow https://github.com/teaching-on-testbeds/gourmetgram.git /mnt/workspace && break
+            git clone --branch master https://github.com/harishbalajib/BirdClassification.git /mnt/workspace && break
             echo "Git clone failed. Retrying in 5 seconds..."
             i=$((i + 1))
             sleep 5
@@ -89,7 +90,8 @@ spec:
 
           echo "Downloading MLflow model artifacts..."
           mlflow artifacts download \
-            --artifact-uri models:/GourmetGramFood11Model/{{inputs.parameters.model-version}} \
+            # --artifact-uri models:/GourmetGramFood11Model/{{inputs.parameters.model-version}} \
+            --artifact-uri models:/BirdClassificationModel/{{inputs.parameters.model-version}} \
             -d /tmp/mlflow_model || { echo "MLflow download failed"; exit 1; }
 
           echo "Searching for model.pth..."
@@ -98,8 +100,10 @@ spec:
             echo "ERROR: model.pth not found in MLflow artifacts"; exit 1
           fi
 
-          echo "Copying model.pth to app/ as food11.pth..."
-          cp "$FOUND" /mnt/workspace/food11.pth
+          # echo "Copying model.pth to app/ as food11.pth..."
+          echo "Copying model.pth to app/ as bird.pth..."
+          # cp "$FOUND" /mnt/workspace/food11.pth
+          cp "$FOUND" /mnt/workspace/bird.pth
           echo "1.0.{{inputs.parameters.model-version}}" > /mnt/workspace/versions.txt
       volumeMounts:
       - name: workdir
@@ -133,8 +137,9 @@ spec:
       source: |
         pip install mlflow-skinny > /dev/null
         export MLFLOW_TRACKING_URI=http://mlflow.birdclef-platform.svc.cluster.local:8000
-        python -c "import mlflow; client = mlflow.tracking.MlflowClient(); client.set_registered_model_alias(name='GourmetGramFood11Model', alias='staging', version='{{inputs.parameters.model-version}}')"
-  
+        # python -c "import mlflow; client = mlflow.tracking.MlflowClient(); client.set_registered_model_alias(name='GourmetGramFood11Model', alias='staging', version='{{inputs.parameters.model-version}}')"
+        python -c "import mlflow; client = mlflow.tracking.MlflowClient(); client.set_registered_model_alias(name='BirdClassificationModel', alias='staging', version='{{inputs.parameters.model-version}}')"
+
   - name: trigger-deploy
     inputs:
       parameters:
