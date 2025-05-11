@@ -12,7 +12,7 @@ import argparse
 
 from ray import tune
 from ray.tune.schedulers import ASHAScheduler
-from ray.air.integration.mlflow import MLflowLoggerCallback
+from ray.air.integrations.mlflow import MLflowLoggerCallback
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Dataset + model definitions (copied from your training script)
@@ -250,5 +250,5 @@ if __name__ == "__main__":
         num_samples=args.num_samples,
         scheduler=scheduler,
         callbacks=[mlflow_cb],
-        resources_per_trial={"cpu": 4, "gpu": 1},
+        resources_per_trial={"cpu": 4, "gpu": 0.25},
     )

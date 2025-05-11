@@ -1,5 +1,7 @@
 import os
+import sys
 import subprocess
+import argparse
 import numpy as np
 import pandas as pd
 import torch
@@ -14,12 +16,10 @@ from mlflow.tracking import MlflowClient
 from sklearn.metrics import f1_score, average_precision_score, precision_recall_curve
 from torch.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import OneCycleLR
-import timm
-from peft import get_peft_model, LoraConfig
 import shutil
-import sys
 import argparse
 
+# ---------------------- Argument Parsing ----------------------
 parser = argparse.ArgumentParser(description="Train MetaMLP with configurable epochs and frozen base models")
 parser.add_argument("--epochs",        "-e", type=int,   default=5,   help="number of training epochs")
 parser.add_argument("--batch_size",          type=int,   default=64,   help="Batch size")
@@ -50,142 +50,19 @@ raw_model = load_frozen_model(args.raw_model_name)
 res_model = load_frozen_model(args.res_model_name)
 eff_model = load_frozen_model(args.eff_model_name)
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Base‐model & dataset class definitions (uncommented so pickling works)
-# ──────────────────────────────────────────────────────────────────────────────
-
-class EmbeddingClassifier(nn.Module):
-    def __init__(self, emb_dim, num_cls):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(emb_dim, 2048), nn.BatchNorm1d(2048), nn.ReLU(), nn.Dropout(0.5),
-            nn.Linear(2048, 1024),    nn.BatchNorm1d(1024), nn.ReLU(), nn.Dropout(0.5),
-            nn.Linear(1024, 512),     nn.BatchNorm1d(512),  nn.ReLU(), nn.Dropout(0.5),
-            nn.Linear(512, num_cls)
-        )
-    def forward(self, x): return self.net(x)
-
-def get_resnet50_multilabel(num_classes):
-    m = torch.hub.load('pytorch/vision:v0.14.0', 'resnet50', pretrained=False)
-    m.conv1 = nn.Conv2d(1, m.conv1.out_channels,
-                        kernel_size=m.conv1.kernel_size,
-                        stride=m.conv1.stride,
-                        padding=m.conv1.padding,
-                        bias=False)
-    m.fc    = nn.Linear(m.fc.in_features, num_classes)
-    return m
-
-TARGET_MODULES  = ["conv_pw","conv_dw","conv_pwl","conv_head"]
-MODULES_TO_SAVE = ["classifier"]
-def build_efficientnetb3_lora(num_classes):
-    base = timm.create_model("efficientnet_b3", pretrained=True)
-    orig_fwd = base.forward
-    def forward_patch(*args, input_ids=None, **kwargs):
-        x = input_ids if input_ids is not None else args[0]
-        return orig_fwd(x)
-    base.forward = forward_patch
-    stem = base.conv_stem
-    base.conv_stem = nn.Conv2d(1, stem.out_channels,
-                               kernel_size=stem.kernel_size,
-                               stride=stem.stride,
-                               padding=stem.padding,
-                               bias=False)
-    base.classifier = nn.Linear(base.classifier.in_features, num_classes)
-    lora_cfg = LoraConfig(
-        r=12, lora_alpha=24,
-        target_modules=TARGET_MODULES,
-        lora_dropout=0.1, bias="none",
-        modules_to_save=MODULES_TO_SAVE,
-        task_type="FEATURE_EXTRACTION",
-        inference_mode=False
-    )
-    return get_peft_model(base, lora_cfg)
-
-class RawAudioCNN(nn.Module):
-    def __init__(self, num_cls):
-        super().__init__()
-        self.conv1 = nn.Conv1d(1, 16,  kernel_size=15, stride=4, padding=7)
-        self.bn1   = nn.BatchNorm1d(16)
-        self.pool  = nn.MaxPool1d(4)
-        self.conv2 = nn.Conv1d(16,32,  kernel_size=15, stride=2, padding=7)
-        self.bn2   = nn.BatchNorm1d(32)
-        self.conv3 = nn.Conv1d(32,64,  kernel_size=15, stride=2, padding=7)
-        self.bn3   = nn.BatchNorm1d(64)
-        self.conv4 = nn.Conv1d(64,128, kernel_size=15, stride=2, padding=7)
-        self.bn4   = nn.BatchNorm1d(128)
-        self.global_pool = nn.AdaptiveAvgPool1d(1)
-        self.fc          = nn.Linear(128, num_cls)
-    def forward(self, x):
-        x = x.unsqueeze(1)
-        x = F.relu(self.bn1(self.conv1(x))); x = self.pool(x)
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        x = F.relu(self.bn4(self.conv4(x)))
-        x = self.global_pool(x).squeeze(-1)
-        return self.fc(x)
-
-class EnsembleDataset(Dataset):
-    def __init__(self, manifest, meta_csv, base):
-        m = pd.read_csv(manifest)
-        meta = pd.read_csv(meta_csv, usecols=["filename","secondary_labels"])
-        meta["rid"]  = meta.filename.str.replace(r"\.ogg$","",regex=True)
-        meta["secs"] = meta.secondary_labels.fillna("").str.split()
-        sec_map = dict(zip(meta.rid, meta.secs))
-        tax_df = pd.read_csv(os.path.join(base,"Data","birdclef-2025","taxonomy.csv"))
-        classes = sorted(tax_df["primary_label"].astype(str).tolist())
-        self.idx_map = {c:i for i,c in enumerate(classes)}
-        self.rows = []
-        for _,r in m.iterrows():
-            rid  = r.chunk_id.split("_chk")[0]
-            labs = [r.primary_label] + sec_map.get(rid,[])
-            labs = [l for l in labs if l in self.idx_map]
-            prim = self.idx_map[r.primary_label]
-            emb_p = os.path.join(base,"embeddings", r.emb_path.lstrip(os.sep))
-            ma_p  = os.path.join(base,"mel_aug",   r.mel_aug_path.lstrip(os.sep))
-            m_p   = os.path.join(base,"mel",       r.mel_path.lstrip(os.sep))
-            wav_p = os.path.join(base,"denoised",  r.audio_path.lstrip(os.sep))
-            yvec  = np.zeros(len(classes), np.float32)
-            for l in labs: yvec[self.idx_map[l]] = 1.0
-            self.rows.append((emb_p, ma_p, m_p, wav_p, yvec, prim))
-    def __len__(self): return len(self.rows)
-    def __getitem__(self, i):
-        emb_p,ma_p,m_p,wav_p,yvec,prim = self.rows[i]
-        emb = torch.from_numpy(np.load(emb_p)["embedding"].mean(axis=0).astype(np.float32))
-        ma  = torch.from_numpy(np.load(ma_p)["mel"].astype(np.float32)).unsqueeze(0)
-        m   = torch.from_numpy(np.load(m_p)["mel"].astype(np.float32)).unsqueeze(0)
-        wav,_ = torchaudio.load(wav_p); wav=wav.squeeze(0)
-        T = 32000*10
-        wav = wav[:T] if wav.size(0)>=T else F.pad(wav,(0,T-wav.size(0)))
-        wav = (wav-wav.mean())/wav.std().clamp_min(1e-6)
-        return emb, ma, m, wav, torch.from_numpy(yvec), prim
-
-def ensemble_collate_fn(batch):
-    embs,mas,ms,wavs,ys,prims = zip(*batch)
-    return (
-        torch.stack(embs,0),
-        torch.stack(mas, 0),
-        torch.stack(ms,  0),
-        torch.stack(wavs,0),
-        torch.stack(ys,  0),
-        torch.tensor(prims)
-    )
-
-# ──────────────────────────────────────────────────────────────────────────────
-# Rest of your MetaMLP training exactly as before
-# ──────────────────────────────────────────────────────────────────────────────
-
+# ---------------------- Remaining Setup ----------------------
 birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
 DEVICE         = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-BATCH_SIZE     = 64
-LR             = 1e-3
-WEIGHT_DECAY   = 1e-4
+BATCH_SIZE     = args.batch_size
+LR             = args.lr
+WEIGHT_DECAY   = args.weight_decay
 EPOCHS         = args.epochs
 HIDDEN_DIMS    = [1024, 512]
 DROPOUT        = 0.3
 FOCAL_GAMMA    = 2.0
-SAVE_EPOCH_CK  = False
 BEST_CKPT      = "best_meta_mlp.pth"
 THRESHOLD_INIT = 0.5
+
 
 TAXONOMY_CSV    = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "taxonomy.csv")
 TRAIN_MANIFEST  = os.path.join(birdclef_base_dir, "Features", "manifest_train.csv")
@@ -193,6 +70,7 @@ TEST_MANIFEST   = os.path.join(birdclef_base_dir, "Features", "manifest_test.csv
 TRAIN_META      = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "train.csv")
 FEATURE_BASE    = os.path.join(birdclef_base_dir, "Features")
 
+# ─── MLflow & SYSTEM METRICS ─────────────────────────────────────────────────
 mlflow.set_experiment("MetaMLP_Supervisor")
 if mlflow.active_run():
     mlflow.end_run()
@@ -214,6 +92,7 @@ CLASSES  = sorted(tax_df["primary_label"].astype(str).tolist())
 NUM_CLS  = len(CLASSES)
 IDX_MAP  = {c:i for i,c in enumerate(CLASSES)}
 
+
 mlflow.log_params({
     "batch_size":   BATCH_SIZE,
     "lr":           LR,
@@ -227,6 +106,88 @@ mlflow.log_params({
     "res_model":    args.res_model_name,
     "eff_model":    args.eff_model_name
 })
+
+class EnsembleDataset(Dataset):
+    def __init__(self, manifest, meta_csv, base):
+        m = pd.read_csv(manifest)
+        meta = pd.read_csv(meta_csv, usecols=["filename","secondary_labels"])
+        meta["rid"]  = meta.filename.str.replace(r"\.ogg$","",regex=True)
+        meta["secs"] = meta.secondary_labels.fillna("").str.split()
+        sec_map = dict(zip(meta.rid, meta.secs))
+
+        self.rows = []
+        for _,r in m.iterrows():
+            rid  = r.chunk_id.split("_chk")[0]
+            labs = [r.primary_label] + sec_map.get(rid,[])
+            labs = [l for l in labs if l in IDX_MAP]
+            prim = IDX_MAP[r.primary_label]
+
+            emb_p = os.path.join(base,"embeddings", r.emb_path.lstrip(os.sep))
+            ma_p  = os.path.join(base,"mel_aug",    r.mel_aug_path.lstrip(os.sep))
+            m_p   = os.path.join(base,"mel",        r.mel_path.lstrip(os.sep))
+            wav_p = os.path.join(base,"denoised",   r.audio_path.lstrip(os.sep))
+
+            yvec = np.zeros(NUM_CLS, np.float32)
+            for l in labs:
+                yvec[IDX_MAP[l]] = 1.0
+
+            self.rows.append((emb_p, ma_p, m_p, wav_p, yvec, prim))
+
+    def __len__(self):
+        return len(self.rows)
+
+    def __getitem__(self, i):
+        emb_p, ma_p, m_p, wav_p, yvec, prim = self.rows[i]
+
+        # 1) Embedding
+        emb_arr = np.load(emb_p)["embedding"].mean(axis=0).astype(np.float32)
+        emb = torch.from_numpy(emb_arr)
+
+        # 2) Mel‑aug
+        ma_arr = np.load(ma_p)["mel"].astype(np.float32)
+        ma = torch.from_numpy(ma_arr).unsqueeze(0)  # [1, n_mels, n_frames]
+
+        # 3) Clean mel
+        m_arr = np.load(m_p)["mel"].astype(np.float32)
+        m = torch.from_numpy(m_arr).unsqueeze(0)    # [1, n_mels, n_frames]
+
+        # 4) Raw waveform
+        wav, _ = torchaudio.load(wav_p)   # [1, samples]
+        wav = wav.squeeze(0)              # [samples]
+        T   = 32000 * 10
+        if wav.size(0) < T:
+            wav = F.pad(wav, (0, T - wav.size(0)))
+        else:
+            wav = wav[:T]
+        wav = (wav - wav.mean()) / wav.std().clamp_min(1e-6)  # normalize
+
+        # 5) Label vector
+        y = torch.from_numpy(yvec)
+
+        return emb, ma, m, wav, y, prim
+
+
+def ensemble_collate_fn(batch):
+    """
+    batch: list of tuples (emb, mel_aug, mel, wav, y, prim)
+     - emb: [emb_dim]
+     - mel_aug, mel: [1, n_mels, n_frames]
+     - wav: [T]
+     - y: [num_classes]
+     - prim: int
+    """
+    embs, mas, ms, wavs, ys, prims = zip(*batch)
+
+    embs = torch.stack(embs, dim=0)   # [B, emb_dim]
+    mas  = torch.stack(mas,  dim=0)   # [B, 1, n_mels, n_frames]
+    ms   = torch.stack(ms,   dim=0)   # [B, 1, n_mels, n_frames]
+    # wavs is a list of [T], stack into [B, T]
+    wavs = torch.stack(wavs, dim=0)   # [B, T]
+    ys   = torch.stack(ys,   dim=0)   # [B, num_classes]
+    prims = torch.tensor(prims, dtype=torch.long)  # [B]
+
+    return embs, mas, ms, wavs, ys, prims
+
 
 train_ds = EnsembleDataset(TRAIN_MANIFEST, TRAIN_META, FEATURE_BASE)
 test_ds  = EnsembleDataset(TEST_MANIFEST,  TRAIN_META, FEATURE_BASE)
@@ -313,6 +274,7 @@ for epoch in range(1, EPOCHS+1):
         run_loss += loss.item() * bs
         total    += bs
 
+        # <-- update tqdm postfix with latest running avg loss -->
         train_bar.set_postfix({"loss": f"{run_loss/total:.4f}"})
 
     train_loss = run_loss / total
@@ -344,6 +306,7 @@ for epoch in range(1, EPOCHS+1):
             all_tgts.append(yb.cpu().numpy())
             all_prims.extend(prim.tolist())
 
+            # <-- update tqdm postfix with latest running eval loss -->
             eval_bar.set_postfix({"loss": f"{val_loss/total:.4f}"})
 
     val_loss = val_loss / total
@@ -352,6 +315,7 @@ for epoch in range(1, EPOCHS+1):
     tgts   = np.vstack(all_tgts)
     prims  = np.array(all_prims, dtype=int)
 
+    # calibrate thresholds
     for i in range(NUM_CLS):
         y_true = tgts[:,i]
         if 0<y_true.sum()<len(y_true):
@@ -359,11 +323,12 @@ for epoch in range(1, EPOCHS+1):
             f1s = 2*prec*rec/(prec+rec+1e-8)
             thresholds[i] = th[np.nanargmax(f1s[:-1])]
 
-    preds      = (scores>=thresholds).astype(int)
-    micro_f1   = f1_score(tgts, preds, average="micro", zero_division=0)
-    micro_ap   = average_precision_score(tgts, scores, average="micro")
+    preds     = (scores>=thresholds).astype(int)
+    micro_f1  = f1_score(tgts, preds, average="micro", zero_division=0)
+    micro_ap  = average_precision_score(tgts, scores, average="micro")
     primary_acc = (scores.argmax(axis=1)==prims).mean()
 
+    # checkpoint best
     if micro_f1>best_f1:
         best_f1,best_ap,best_acc = micro_f1,micro_ap,primary_acc
         torch.save(meta_model.state_dict(), BEST_CKPT)
@@ -379,7 +344,7 @@ for epoch in range(1, EPOCHS+1):
 
     print(f"→ Epoch {epoch}/{EPOCHS}  "
           f"F1={micro_f1:.4f}  AP={micro_ap:.4f}  PrimAcc={primary_acc:.4f}")
-
+    
 mlflow.log_metric("best_micro_f1", best_f1)
 mlflow.log_metric("best_micro_ap", best_ap)
 mlflow.log_metric("best_primary_acc", best_acc)

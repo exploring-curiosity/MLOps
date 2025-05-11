@@ -11,9 +11,11 @@ from peft import get_peft_model, LoraConfig
 from sklearn.metrics import f1_score, average_precision_score, precision_recall_curve
 from torch.amp import autocast, GradScaler
 
+
 from ray import tune
 from ray.tune.schedulers import ASHAScheduler
-from ray.air.integration.mlflow import MLflowLoggerCallback
+from ray.air.integrations.mlflow import MLflowLoggerCallback
+
 import argparse
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -263,5 +265,5 @@ if __name__ == "__main__":
         num_samples=args.num_samples,
         scheduler=scheduler,
         callbacks=[mlflow_cb],
-        resources_per_trial={"cpu": 4, "gpu": 1},
+        resources_per_trial={"cpu": 4, "gpu": 0.25},
     )
