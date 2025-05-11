@@ -37,6 +37,36 @@
       set_fact:
         external_ip: "{{ ansible_all_ipv4_addresses | select('match', '^10\\.56\\..*') | list | first }}"
 
+    - name: Prepare block storage mount and subdirectories on node1
+      shell: |
+          # Mount the main block volume if not already mounted
+        mkdir -p /mnt/mydata
+        if ! mountpoint -q /mnt/mydata; then
+          if ! blkid /dev/vdb; then
+            echo "Formatting block volume..."
+            mkfs.ext4 /dev/vdb
+          fi
+          
+          if ! grep -q "/dev/vdb /mnt/mydata" /etc/fstab; then
+            echo "/dev/vdb /mnt/mydata ext4 defaults 0 0" >> /etc/fstab
+          fi
+            mount /mnt/mydata || true
+        fi
+          
+        # Create dedicated subdirectories for MinIO and PostgreSQL
+        mkdir -p /mnt/mydata/minio
+        mkdir -p /mnt/mydata/postgres
+          
+        # Set proper permissions
+        chown -R 1000:1000 /mnt/mydata/minio
+        chown -R 1000:1000 /mnt/mydata/postgres
+        chmod 777 /mnt/mydata/minio
+        chmod 777 /mnt/mydata/postgres
+      args:
+          executable: /bin/bash
+      register: mount_result
+      changed_when: mount_result.rc == 0
+
     - name: Ensure gourmetgram-platform namespace exists
       command: kubectl get namespace gourmetgram-platform
       register: ns_check
