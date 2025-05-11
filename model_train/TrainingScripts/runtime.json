@@ -1,6 +1,7 @@
 {
     "pip": "requirements.txt",
     "env_vars": {
-      "BIRDCLEF_BASE_DIR": "/mnt"
+      "BIRDCLEF_BASE_DIR": "/mnt",
+      "MLFLOW_TRACKING_URI": "http://129.114.26.212:8000/"
     }
 }

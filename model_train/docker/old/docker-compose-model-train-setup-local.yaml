@@ -27,6 +27,7 @@ services:
       /bin/sh -c "
         mkdir -p /tmp/ray && \
         chown -R root:root /tmp/ray && \
+        ray metrics launch-prometheus && \
         ray start --head --port=6379 --dashboard-host=0.0.0.0 --block --metrics-export-port=8080
       "
     ports:
@@ -41,7 +42,7 @@ services:
       - RAY_RUNTIME_ENV_CONTAINER_PROVIDER=docker
       - AWS_ACCESS_KEY_ID=your-access-key
       - AWS_SECRET_ACCESS_KEY=your-secret-key
-      - AWS_ENDPOINT_URL=http://129.114.26.212:9000
+      - AWS_ENDPOINT_URL=http://minio:9000
     user: root
 
   ray-worker-0:
@@ -63,10 +64,42 @@ services:
       - RAY_RUNTIME_ENV_CONTAINER_PROVIDER=docker
       - AWS_ACCESS_KEY_ID=your-access-key
       - AWS_SECRET_ACCESS_KEY=your-secret-key
-      - AWS_ENDPOINT_URL=http://129.114.26.212:9000
+      - AWS_ENDPOINT_URL=http://minio:9000
       - MLFLOW_TRACKING_URI="http://129.114.26.212:8000/"
     volumes:
       - features_data:/mnt
+    depends_on:
+      - ray-head
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    entrypoint: |
+      /bin/sh -c "
+      # Wait for config directory
+      while [ ! -f /tmp/ray/session_latest/metrics/grafana/grafana.ini ]; do
+        echo 'Waiting for Grafana config files...'
+        sleep 2
+      done
+      
+      # Start Grafana with copied config
+      /run.sh --config /tmp/ray/session_latest/metrics/grafana/grafana.ini"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_storage:/var/lib/grafana
+      - ray_tmp:/tmp/ray:ro
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_PATHS_PROVISIONING=/tmp/ray/session_latest/metrics/grafana/provisioning
+      - GF_SERVER_HTTP_ADDR=0.0.0.0
+      - GF_DATABASE_TYPE=sqlite3
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_PROXY_ENABLED=true
+      - GF_AUTH_PROXY_AUTO_SIGN_UP=true
     depends_on:
       - ray-head
 
