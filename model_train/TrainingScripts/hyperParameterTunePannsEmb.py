@@ -205,12 +205,12 @@ def train_tune(config):
         micro_ap = average_precision_score(tgts, scores, average="micro")
 
         # report metrics
-        tune.report(
-            train_loss=train_loss,
-            val_loss=val_loss,
-            micro_f1=micro_f1,
-            micro_ap=micro_ap
-        )
+        tune.report({
+            "train_loss": train_loss,
+            "val_loss":   val_loss,
+            "micro_f1":   micro_f1,
+            "micro_ap":   micro_ap,
+        })
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Main: Ray Tune run
