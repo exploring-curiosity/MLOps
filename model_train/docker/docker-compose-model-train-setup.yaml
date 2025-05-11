@@ -104,5 +104,6 @@ services:
 
 volumes:
   features_data:
+    name: features_data
   grafana_storage:
   ray_tmp:
