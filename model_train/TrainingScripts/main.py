@@ -70,6 +70,7 @@ def submit_train_job(
         "--runtime-env", "runtime.json",
         "--entrypoint-num-gpus", str(gpus),
         "--entrypoint-num-cpus", str(cpus),
+        "--working-dir", ".",
         "--",
         "python", script_path,
         "--batch_size",   str(batch_size),
