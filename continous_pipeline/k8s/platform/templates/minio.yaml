@@ -49,9 +49,9 @@ spec:
               mountPath: /data
       volumes:
         - name: minio-storage
-          hostPath:
-            path: /mnt/block
-            type: Directory
+#          hostPath:
+#            path: /mnt/block
+#            type: Directory
           persistentVolumeClaim:
             claimName: minio-pvc
 ---

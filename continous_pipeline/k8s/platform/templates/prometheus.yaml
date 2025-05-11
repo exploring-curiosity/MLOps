@@ -63,9 +63,9 @@ spec:
               subPath: prometheus.yml
       volumes:
         - name: prometheus-storage
-          hostPath:
-            path: /mnt/block
-            type: Directory
+#          hostPath:
+#            path: /mnt/block
+#            type: Directory
           persistentVolumeClaim:
             claimName: prometheus-pvc
         - name: prometheus-config
