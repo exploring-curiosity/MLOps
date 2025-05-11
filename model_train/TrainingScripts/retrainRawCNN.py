@@ -15,6 +15,7 @@ from mlflow.tracking import MlflowClient
 from torch.optim.lr_scheduler import OneCycleLR
 from torch.amp import autocast, GradScaler
 from sklearn.metrics import f1_score, average_precision_score, precision_recall_curve
+import shutil
 
 import argparse
 
@@ -245,6 +246,8 @@ mlflow.log_metric("best_micro_ap", best_ap)
 mlflow.log_metric("best_prim_acc", best_acc)
 
 LOCAL_MODEL_DIR = "RawAudioCNN_model_retrain"
+if os.path.isdir(LOCAL_MODEL_DIR):
+    shutil.rmtree(LOCAL_MODEL_DIR)
 mlflow.pytorch.save_model(model, LOCAL_MODEL_DIR)
 mlflow.log_artifacts(LOCAL_MODEL_DIR, artifact_path="RawAudioCNN_model_retrain")
 

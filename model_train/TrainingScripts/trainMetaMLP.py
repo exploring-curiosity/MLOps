@@ -18,6 +18,7 @@ from torch.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import OneCycleLR
 
 import argparse
+import shutil
 
 # ---------------------- Argument Parsing ----------------------
 parser = argparse.ArgumentParser(description="Train MetaMLP with configurable epochs and frozen base models")
@@ -424,6 +425,8 @@ mlflow.log_metric("best_micro_ap", best_ap)
 mlflow.log_metric("best_primary_acc", best_acc)
 
 LOCAL_MODEL_DIR = "Meta_MLP_model"
+if os.path.isdir(LOCAL_MODEL_DIR):
+    shutil.rmtree(LOCAL_MODEL_DIR)
 mlflow.pytorch.save_model(meta_model, LOCAL_MODEL_DIR)
 mlflow.log_artifacts(LOCAL_MODEL_DIR, artifact_path="meta_mlp_model")
 

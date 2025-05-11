@@ -1,6 +1,6 @@
 import os
 import subprocess
-import psutil
+import shutil
 import numpy as np
 import pandas as pd
 import torch
@@ -302,6 +302,9 @@ mlflow.log_metric("best_micro_f1", best_f1)
 mlflow.log_metric("best_micro_ap", best_ap)
 
 LOCAL_MODEL_DIR = "Panns_Emb_MLP_model"
+if os.path.isdir(LOCAL_MODEL_DIR):
+    shutil.rmtree(LOCAL_MODEL_DIR)
+
 mlflow.pytorch.save_model(model, LOCAL_MODEL_DIR)
 mlflow.log_artifacts(LOCAL_MODEL_DIR, artifact_path="panns_emb_mlp_model")
 

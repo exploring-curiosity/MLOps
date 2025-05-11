@@ -14,6 +14,7 @@ import mlflow.pytorch
 from sklearn.metrics import f1_score, average_precision_score, precision_recall_curve
 from torch.amp import autocast, GradScaler
 import argparse
+import shutil
 
 # ---------------------- Argument Parsing ----------------------
 parser = argparse.ArgumentParser(description="Train ResNet50 with configurable epochs")
@@ -250,6 +251,8 @@ mlflow.log_metric("best_micro_ap", best_ap)
 mlflow.log_metric("best_primary_acc", best_acc)
 
 LOCAL_MODEL_DIR = "ResNet50_model"
+if os.path.isdir(LOCAL_MODEL_DIR):
+    shutil.rmtree(LOCAL_MODEL_DIR)
 mlflow.pytorch.save_model(model, LOCAL_MODEL_DIR)
 mlflow.log_artifacts(LOCAL_MODEL_DIR, artifact_path="resnet50_model")
 

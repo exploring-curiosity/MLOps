@@ -16,6 +16,7 @@ from mlflow.tracking import MlflowClient
 from sklearn.metrics import f1_score, average_precision_score, precision_recall_curve
 from torch.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import OneCycleLR
+import shutil
 
 # ---------------------- Argument Parsing ----------------------
 parser = argparse.ArgumentParser(description="Retrain Embedding MLP from MLflow Model Registry")
@@ -295,6 +296,8 @@ mlflow.log_metric("best_micro_f1", best_f1)
 mlflow.log_metric("best_micro_ap", best_ap)
 
 LOCAL_MODEL_DIR = "Panns_Emb_MLP_model_retrain"
+if os.path.isdir(LOCAL_MODEL_DIR):
+    shutil.rmtree(LOCAL_MODEL_DIR)
 mlflow.pytorch.save_model(model, LOCAL_MODEL_DIR)
 mlflow.log_artifacts(LOCAL_MODEL_DIR, artifact_path="panns_emb_mlp_model_retrain")
 

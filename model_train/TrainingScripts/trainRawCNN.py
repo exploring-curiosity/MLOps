@@ -15,6 +15,7 @@ from torch.amp import autocast, GradScaler
 from sklearn.metrics import f1_score, average_precision_score, precision_recall_curve
 
 import argparse
+import shutil
 
 parser = argparse.ArgumentParser(description="Train RawCNN with configurable epochs")
 parser.add_argument(
@@ -278,6 +279,8 @@ mlflow.log_metric("best_micro_ap", best_ap)
 mlflow.log_metric("best_prim_acc", best_acc)
 
 LOCAL_MODEL_DIR = "RawCNN_model"
+if os.path.isdir(LOCAL_MODEL_DIR):
+    shutil.rmtree(LOCAL_MODEL_DIR)
 mlflow.pytorch.save_model(model, LOCAL_MODEL_DIR)
 mlflow.log_artifacts(LOCAL_MODEL_DIR, artifact_path="RawCNN_model")
 

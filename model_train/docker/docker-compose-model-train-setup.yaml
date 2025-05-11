@@ -73,5 +73,5 @@ services:
 volumes:
   features_data:
     name: features_data
-  grafana_storage:
+    external: true
   ray_tmp:
