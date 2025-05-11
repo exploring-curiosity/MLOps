@@ -70,7 +70,7 @@ res_model = load_frozen_model(args.res_model_name)
 eff_model = load_frozen_model(args.eff_model_name)
 
 # ---------------------- MLflow Setup ----------------------
-mlflow.set_experiment(f"{args.meta_model_name}_Retrain")
+mlflow.set_experiment("MetaMLP_Supervisor_Retrain")
 if mlflow.active_run(): mlflow.end_run()
 run = mlflow.start_run(log_system_metrics=True)
 print(f"MLFLOW_RUN_ID={run.info.run_id}")
@@ -215,7 +215,7 @@ for epoch in range(1, EPOCHS+1):
             p4 = torch.sigmoid(eff_model(m))
         feat = torch.cat([p1,p2,p3,p4], dim=1)
         optimizer.zero_grad()
-        with autocast():
+        with autocast(device_type="cuda"):
             logits = meta_model(feat)
             loss   = criterion(logits, yb)
         scaler.scale(loss).backward()

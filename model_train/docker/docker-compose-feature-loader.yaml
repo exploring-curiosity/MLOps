@@ -29,7 +29,7 @@ services:
         apt-get update && \
         apt-get install -y curl && \
         mkdir -p /data/Data/birdclef-2025 && \
-        curl -L -o /data/Data/birdclef-2025/taxonomy.csv 'https://nyu.box.com/s/si14xdrfj08bno99xi1ri5jcunl3hcv2?download=1'
+        curl -L -o /data/Data/birdclef-2025/taxonomy.csv 'https://nyu.box.com/shared/static/si14xdrfj08bno99xi1ri5jcunl3hcv2'
       "
     restart: "no"
 
@@ -44,7 +44,7 @@ services:
         apt-get update && \
         apt-get install -y curl && \
         mkdir -p /data/Data/birdclef-2025 && \
-        curl -L -o /data/Data/birdclef-2025/train.csv 'https://nyu.box.com/s/t1tlcnwbqk3j6dxkmwed63ajnjc7yyqc?download=1'
+        curl -L -o /data/Data/birdclef-2025/train.csv 'https://nyu.box.com/shared/static/t1tlcnwbqk3j6dxkmwed63ajnjc7yyqc'
       "
     restart: "no"
 

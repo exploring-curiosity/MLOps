@@ -71,7 +71,7 @@ print(f"Loading model from registry URI: {model_uri}")
 model     = mlflow.pytorch.load_model(model_uri).to(DEVICE)
 
 # ---------------------- MLflow Setup ----------------------
-mlflow.set_experiment(f"{model_name}_Retrain")
+mlflow.set_experiment(f"PannsMLP_PrimaryLabel_Retrain")
 if mlflow.active_run():
     mlflow.end_run()
 run = mlflow.start_run(log_system_metrics=True)

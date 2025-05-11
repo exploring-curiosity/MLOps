@@ -8,8 +8,6 @@ noisereduce
 panns-inference
 ipython
 loralib
-peft
-timm
 ray
 pynvml
 mlflow
@@ -18,3 +16,5 @@ fastapi
 uvicorn
 prefect
 ray[default]
+peft
+timm

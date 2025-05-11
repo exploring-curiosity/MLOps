@@ -47,7 +47,7 @@ birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Using device:", DEVICE)
 
-mlflow.set_experiment("EfficientNetB3_LoRA")
+mlflow.set_experiment("EfficientNetB3_LoRA_No_Mixed_precision")
 if mlflow.active_run(): 
     mlflow.end_run()
 run = mlflow.start_run(log_system_metrics=True)
@@ -241,10 +241,9 @@ for epoch in range(1, EPOCHS+1):
     with torch.no_grad():
         for xb, yb, prim_idx in tqdm(test_loader, desc=f"[{epoch}/{EPOCHS}] Eval ", unit="batch"):
             xb, yb = xb.to(DEVICE), yb.to(DEVICE)
-            with autocast(device_type="cuda", dtype=torch.bfloat16):
-                logits = model(xb)
-                val_loss += criterion(logits, yb).item()*xb.size(0)
-                scores   = torch.sigmoid(logits).cpu().numpy()
+            logits = model(xb)
+            val_loss += criterion(logits, yb).item()*xb.size(0)
+            scores   = torch.sigmoid(logits).cpu().numpy()
             all_scores.append(scores)
             all_tgts.append(yb.cpu().numpy())
             all_prims.extend(prim_idx.tolist())

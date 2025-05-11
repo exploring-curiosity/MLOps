@@ -21,9 +21,9 @@ import argparse
 
 # ---------------------- Argument Parsing ----------------------
 parser = argparse.ArgumentParser(description="Train MetaMLP with configurable epochs and frozen base models")
-parser.add_argument("--epochs",        "-e", type=int,   default=20,   help="number of training epochs")
+parser.add_argument("--epochs",        "-e", type=int,   default=5,   help="number of training epochs")
 parser.add_argument("--batch_size",          type=int,   default=64,   help="Batch size")
-parser.add_argument("--lr",                  type=float, default=1e-3, help="Learning rate")
+parser.add_argument("--lr",                  type=float, default=1e-4, help="Learning rate")
 parser.add_argument("--weight_decay",        type=float, default=1e-4, help="Weight decay")
 parser.add_argument("--emb_model_name",      type=str,   default="PannsMLP_PrimaryLabel", help="MLflow registry name for Embedding MLP")
 parser.add_argument("--raw_model_name",      type=str,   default="RawAudioCNN",          help="MLflow registry name for RawAudioCNN")

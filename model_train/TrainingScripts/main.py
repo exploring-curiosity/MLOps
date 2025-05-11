@@ -118,6 +118,7 @@ def submit_retrain_job(
         "--runtime-env", "runtime.json",
         "--entrypoint-num-gpus", str(gpus),
         "--entrypoint-num-cpus", str(cpus),
+        "--working-dir", ".",
         "--",
         "python", script_path,
         "--epochs",           str(epochs),
