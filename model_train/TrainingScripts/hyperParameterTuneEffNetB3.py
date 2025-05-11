@@ -65,19 +65,38 @@ def build_efficientnetb3_lora(num_classes, lora_r, lora_alpha, lora_dropout):
 
     base = timm.create_model("efficientnet_b3", pretrained=True)
     orig_fwd = base.forward
+
     def forward_patch(*args, **kwargs):
-        x = kwargs.pop("input_ids", args[0])
+        # 1) grab the tensor input
+        if len(args) > 0:
+            x = args[0]
+        elif "input_ids" in kwargs:
+            x = kwargs.pop("input_ids")
+        elif "inputs_embeds" in kwargs:
+            x = kwargs.pop("inputs_embeds")
+        else:
+            raise ValueError("No input tensor provided to forward()")
+
+        # 2) drop every other kwarg (e.g. attention_mask, etc.)
+        #    so the original model only sees `x`
         return orig_fwd(x)
+
     base.forward = forward_patch
 
+    # adapt to 1‑channel
     stem = base.conv_stem
-    base.conv_stem = nn.Conv2d(1, stem.out_channels,
-                               kernel_size=stem.kernel_size,
-                               stride=stem.stride,
-                               padding=stem.padding,
-                               bias=False)
+    base.conv_stem = nn.Conv2d(
+        1, stem.out_channels,
+        kernel_size=stem.kernel_size,
+        stride=stem.stride,
+        padding=stem.padding,
+        bias=False
+    )
+
+    # replace head
     base.classifier = nn.Linear(base.classifier.in_features, num_classes)
 
+    # apply LoRA
     lora_cfg = LoraConfig(
         r=lora_r, lora_alpha=lora_alpha,
         target_modules=TARGET_MODULES,

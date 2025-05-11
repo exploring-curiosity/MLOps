@@ -19,6 +19,11 @@ from torch.optim.lr_scheduler import OneCycleLR
 import shutil
 import argparse
 
+from trainPannsEmb import EmbeddingClassifier
+from trainResNet50 import get_resnet50_multilabel
+from trainEffNetB3 import build_efficientnetb3_lora
+from trainRawCNN import RawAudioCNN
+
 # ---------------------- Argument Parsing ----------------------
 parser = argparse.ArgumentParser(description="Train MetaMLP with configurable epochs and frozen base models")
 parser.add_argument("--epochs",        "-e", type=int,   default=5,   help="number of training epochs")
@@ -31,24 +36,6 @@ parser.add_argument("--res_model_name",      type=str,   default="ResNet50_MelAu
 parser.add_argument("--eff_model_name",      type=str,   default="EfficientNetB3_LoRA",  help="MLflow registry name for EfficientNetB3")
 args = parser.parse_args()
 
-# ---------------------- Load & Freeze Base Models ----------------------
-def load_frozen_model(reg_name):
-    client = MlflowClient()
-    vers   = client.search_model_versions(f"name = '{reg_name}'")
-    if not vers:
-        print(f"No registered model '{reg_name}' found. Exiting."); sys.exit(1)
-    latest = max(vers, key=lambda mv: int(mv.version))
-    uri    = f"models:/{reg_name}/{latest.version}"
-    print(f"Loading frozen base model {reg_name} from {uri}")
-    m = mlflow.pytorch.load_model(uri)
-    m.eval()
-    for p in m.parameters(): p.requires_grad = False
-    return m
-
-emb_model = load_frozen_model(args.emb_model_name)
-raw_model = load_frozen_model(args.raw_model_name)
-res_model = load_frozen_model(args.res_model_name)
-eff_model = load_frozen_model(args.eff_model_name)
 
 # ---------------------- Remaining Setup ----------------------
 birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
@@ -202,6 +189,55 @@ test_loader  = DataLoader(
     num_workers=4, pin_memory=True,
     collate_fn=ensemble_collate_fn
 )
+
+# ---------------------- Load & Freeze Base Models ----------------------
+sample_emb, _, _, _, _, _ = train_ds[0]
+emb_dim = sample_emb.shape[0]
+
+model_builders = {
+    args.emb_model_name: lambda: EmbeddingClassifier(emb_dim=emb_dim, num_cls=NUM_CLS),   # fill emb_dim & NUM_CLS
+    args.res_model_name: lambda: get_resnet50_multilabel(NUM_CLS),
+    args.eff_model_name: lambda: build_efficientnetb3_lora(NUM_CLS),
+    args.raw_model_name: lambda: RawAudioCNN(NUM_CLS),
+}
+
+ckpt_files = {
+    args.emb_model_name: "best_emb_mlp.pth",
+    args.res_model_name: "best_resnet50.pth",
+    args.eff_model_name: "best_effb3_lora.pth",
+    args.raw_model_name: "best_rawcnn.pth",
+}
+
+def load_frozen_model(reg_name):
+    client = MlflowClient()
+    vers   = client.search_model_versions(f"name = '{reg_name}'")
+    if not vers:
+        print(f"No registered model '{reg_name}' found. Exiting.")
+        sys.exit(1)
+    latest = max(vers, key=lambda mv: int(mv.version))
+    run_id = latest.run_id
+    print(f"Loading state_dict for {reg_name} (version {latest.version}) from run {run_id}")
+
+    # download only the `model` artifact directory
+    local_dir = client.download_artifacts(run_id, artifact_path="model")
+    ckpt_path = os.path.join(local_dir, ckpt_files[reg_name])
+
+    # instantiate & load weights
+    model = model_builders[reg_name]().to(DEVICE)
+    sd = torch.load(ckpt_path, map_location=DEVICE)
+    model.load_state_dict(sd)
+
+    model.eval()
+    for p in model.parameters():
+        p.requires_grad = False
+
+    return model
+
+# ─── LOAD & FREEZE BASE MODELS ──────────────────────────────────────────────────
+emb_model = load_frozen_model(args.emb_model_name)
+raw_model = load_frozen_model(args.raw_model_name)
+res_model = load_frozen_model(args.res_model_name)
+eff_model = load_frozen_model(args.eff_model_name)
 
 class MetaMLP(nn.Module):
     def __init__(self, in_dim, hidden_dims, dropout):
