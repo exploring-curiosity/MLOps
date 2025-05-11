@@ -1,0 +1,3 @@
+audio_dir: "/Users/vaishnavideshmukh/Documents/MLOps/MLOps_Project/birdclef-2025/train_audio"
+manifest_path: "data/manifest_enriched.csv"
+features_path: "/Users/vaishnavideshmukh/Downloads/features_sampled"
