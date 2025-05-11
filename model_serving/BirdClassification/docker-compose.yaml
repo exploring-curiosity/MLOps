@@ -1,0 +1,62 @@
+version: "3.8"
+name: fastapi_test
+
+services:
+
+  fastapi_server:
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
+    container_name: fastapi_server
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    volumes:
+      - ./fastapi:/app
+    ports:
+      - "8080:8000"  # FastAPI exposed to host
+    environment:
+      - TRITON_SERVER_URL=http://triton_server:8000  # Docker internal access
+
+  triton_server:
+    image: nvcr.io/nvidia/tritonserver:25.04-py3
+    container_name: triton_server
+    runtime: nvidia
+    ports:
+      - "8081:8000"  # Triton HTTP
+      - "8001:8001"  # gRPC (optional)
+      - "8002:8002"  # Prometheus metrics
+    volumes:
+      - ./models:/models
+    command: >
+      tritonserver \
+      --model-repository=/models \
+      --model-control-mode=poll \
+      --strict-model-config=false
+
+  jupyter:
+    container_name: jupyter
+    image: quay.io/jupyter/minimal-notebook:latest
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./:/home/jovyan/work
+    command: start-notebook.sh --NotebookApp.token=''
+    working_dir: /home/jovyan/work
+
+  flask:
+    build:
+      context: ./flask
+      dockerfile: Dockerfile
+    container_name: flask
+    ports:
+      - "5000:5000"
+    environment:
+      - FASTAPI_SERVER_URL=http://fastapi_server:8000
+    depends_on:
+      - fastapi_server
