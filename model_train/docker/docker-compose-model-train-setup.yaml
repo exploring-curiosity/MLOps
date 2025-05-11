@@ -61,6 +61,7 @@ services:
               device_ids: ["0"]
     shm_size: '24g'
     environment:
+      - RAY_RUNTIME_ENV_CONTAINER_PROVIDER=docker
       - AWS_ACCESS_KEY_ID=your-access-key
       - AWS_SECRET_ACCESS_KEY=your-secret-key
       - AWS_ENDPOINT_URL=http://minio:9000
