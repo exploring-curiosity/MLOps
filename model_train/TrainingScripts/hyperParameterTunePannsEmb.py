@@ -164,7 +164,7 @@ def train_tune(config):
             xb, yb = xb.to(device), yb.to(device)
             xb_m, ya, yb_m, lam = mixup(xb, yb, config["mixup_alpha"])
             optimizer.zero_grad()
-            with autocast():
+            with autocast(device_type="cuda"):
                 logits = model(xb_m)
                 loss   = lam*criterion(logits, ya) + (1-lam)*criterion(logits, yb_m)
             scaler.scale(loss).backward()
@@ -182,7 +182,7 @@ def train_tune(config):
         with torch.no_grad():
             for xb, yb, _ in val_loader:
                 xb, yb = xb.to(device), yb.to(device)
-                with autocast():
+                with autocast(device_type="cuda"):
                     logits = model(xb)
                     val_loss += criterion(logits, yb).item()*xb.size(0)
                     scores   = torch.sigmoid(logits).cpu().numpy()
