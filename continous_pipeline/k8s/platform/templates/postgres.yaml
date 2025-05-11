@@ -10,8 +10,8 @@ spec:
   resources:
     requests:
       storage: 5Gi
-local:
-  path: /mnt/mydata/postgres
+  local:
+    path: /home/cc/test
 ---
 apiVersion: apps/v1
 kind: Deployment
