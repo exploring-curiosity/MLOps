@@ -1,5 +1,7 @@
 import os
+import sys
 import subprocess
+import argparse
 import numpy as np
 import pandas as pd
 import torch
@@ -10,35 +12,55 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import mlflow
 import mlflow.pytorch
+from mlflow.tracking import MlflowClient
 from sklearn.metrics import f1_score, average_precision_score, precision_recall_curve
 from torch.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import OneCycleLR
-import timm
-from peft import get_peft_model, LoraConfig
 
 import argparse
 
-parser = argparse.ArgumentParser(description="Train MetaMLP with configurable epochs")
-parser.add_argument(
-    "--epochs", "-e",
-    type=int,
-    default=20,
-    help="number of training epochs"
-)
+# ---------------------- Argument Parsing ----------------------
+parser = argparse.ArgumentParser(description="Train MetaMLP with configurable epochs and frozen base models")
+parser.add_argument("--epochs",        "-e", type=int,   default=20,   help="number of training epochs")
+parser.add_argument("--batch_size",          type=int,   default=64,   help="Batch size")
+parser.add_argument("--lr",                  type=float, default=1e-3, help="Learning rate")
+parser.add_argument("--weight_decay",        type=float, default=1e-4, help="Weight decay")
+parser.add_argument("--emb_model_name",      type=str,   default="PannsMLP_PrimaryLabel", help="MLflow registry name for Embedding MLP")
+parser.add_argument("--raw_model_name",      type=str,   default="RawAudioCNN",          help="MLflow registry name for RawAudioCNN")
+parser.add_argument("--res_model_name",      type=str,   default="ResNet50_MelAug",      help="MLflow registry name for ResNet50")
+parser.add_argument("--eff_model_name",      type=str,   default="EfficientNetB3_LoRA",  help="MLflow registry name for EfficientNetB3")
 args = parser.parse_args()
 
-birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
+# ---------------------- Load & Freeze Base Models ----------------------
+def load_frozen_model(reg_name):
+    client = MlflowClient()
+    vers   = client.search_model_versions(f"name = '{reg_name}'")
+    if not vers:
+        print(f"No registered model '{reg_name}' found. Exiting."); sys.exit(1)
+    latest = max(vers, key=lambda mv: int(mv.version))
+    uri    = f"models:/{reg_name}/{latest.version}"
+    print(f"Loading frozen base model {reg_name} from {uri}")
+    m = mlflow.pytorch.load_model(uri)
+    m.eval()
+    for p in m.parameters(): p.requires_grad = False
+    return m
 
+emb_model = load_frozen_model(args.emb_model_name)
+raw_model = load_frozen_model(args.raw_model_name)
+res_model = load_frozen_model(args.res_model_name)
+eff_model = load_frozen_model(args.eff_model_name)
+
+# ---------------------- Remaining Setup ----------------------
+birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
 DEVICE         = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-BATCH_SIZE     = 64
-LR             = 1e-3
-WEIGHT_DECAY   = 1e-4
+BATCH_SIZE     = args.batch_size
+LR             = args.lr
+WEIGHT_DECAY   = args.weight_decay
 EPOCHS         = args.epochs
 HIDDEN_DIMS    = [1024, 512]
 DROPOUT        = 0.3
 FOCAL_GAMMA    = 2.0
-SAVE_EPOCH_CK  = False
-BEST_CKPT      = "best_meta_mlp.pt"
+BEST_CKPT      = "best_meta_mlp.pth"
 THRESHOLD_INIT = 0.5
 
 
@@ -50,8 +72,11 @@ FEATURE_BASE    = os.path.join(birdclef_base_dir, "Features")
 
 # ─── MLflow & SYSTEM METRICS ─────────────────────────────────────────────────
 mlflow.set_experiment("MetaMLP_Supervisor")
-if mlflow.active_run(): mlflow.end_run()
-mlflow.start_run(log_system_metrics=True)
+if mlflow.active_run():
+    mlflow.end_run()
+run = mlflow.start_run(log_system_metrics=True)
+
+print(f"MLFLOW_RUN_ID={run.info.run_id}")
 
 gpu_info = next(
     (subprocess.run(cmd, capture_output=True, text=True).stdout
@@ -67,6 +92,7 @@ CLASSES  = sorted(tax_df["primary_label"].astype(str).tolist())
 NUM_CLS  = len(CLASSES)
 IDX_MAP  = {c:i for i,c in enumerate(CLASSES)}
 
+
 mlflow.log_params({
     "batch_size":   BATCH_SIZE,
     "lr":           LR,
@@ -74,81 +100,85 @@ mlflow.log_params({
     "epochs":       EPOCHS,
     "hidden_dims":  HIDDEN_DIMS,
     "dropout":      DROPOUT,
-    "focal_gamma":  FOCAL_GAMMA
+    "focal_gamma":  FOCAL_GAMMA,
+    "emb_model":    args.emb_model_name,
+    "raw_model":    args.raw_model_name,
+    "res_model":    args.res_model_name,
+    "eff_model":    args.eff_model_name
 })
 
-class EmbeddingClassifier(nn.Module):
-    def __init__(self, emb_dim, num_cls):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(emb_dim, 2048), nn.BatchNorm1d(2048), nn.ReLU(), nn.Dropout(DROPOUT),
-            nn.Linear(2048, 1024),    nn.BatchNorm1d(1024), nn.ReLU(), nn.Dropout(DROPOUT),
-            nn.Linear(1024, 512),     nn.BatchNorm1d(512),  nn.ReLU(), nn.Dropout(DROPOUT),
-            nn.Linear(512, num_cls)
-        )
-    def forward(self, x): return self.net(x)
+# class EmbeddingClassifier(nn.Module):
+#     def __init__(self, emb_dim, num_cls):
+#         super().__init__()
+#         self.net = nn.Sequential(
+#             nn.Linear(emb_dim, 2048), nn.BatchNorm1d(2048), nn.ReLU(), nn.Dropout(DROPOUT),
+#             nn.Linear(2048, 1024),    nn.BatchNorm1d(1024), nn.ReLU(), nn.Dropout(DROPOUT),
+#             nn.Linear(1024, 512),     nn.BatchNorm1d(512),  nn.ReLU(), nn.Dropout(DROPOUT),
+#             nn.Linear(512, num_cls)
+#         )
+#     def forward(self, x): return self.net(x)
 
-def get_resnet50_multilabel(num_classes):
-    m = torch.hub.load('pytorch/vision:v0.14.0', 'resnet50', pretrained=False)
-    m.conv1 = nn.Conv2d(1, m.conv1.out_channels,
-                        kernel_size=m.conv1.kernel_size,
-                        stride=m.conv1.stride,
-                        padding=m.conv1.padding,
-                        bias=False)
-    m.fc    = nn.Linear(m.fc.in_features, num_classes)
-    return m
+# def get_resnet50_multilabel(num_classes):
+#     m = torch.hub.load('pytorch/vision:v0.14.0', 'resnet50', pretrained=False)
+#     m.conv1 = nn.Conv2d(1, m.conv1.out_channels,
+#                         kernel_size=m.conv1.kernel_size,
+#                         stride=m.conv1.stride,
+#                         padding=m.conv1.padding,
+#                         bias=False)
+#     m.fc    = nn.Linear(m.fc.in_features, num_classes)
+#     return m
 
-TARGET_MODULES  = ["conv_pw","conv_dw","conv_pwl","conv_head"]
-MODULES_TO_SAVE = ["classifier"]
-def build_efficientnetb3_lora(num_classes):
-    base = timm.create_model("efficientnet_b3", pretrained=True)
-    # patch forward
-    orig_fwd = base.forward
-    def forward_patch(*args, input_ids=None, **kwargs):
-        x = input_ids if input_ids is not None else args[0]
-        return orig_fwd(x)
-    base.forward = forward_patch
-    # adapt stem & head
-    stem = base.conv_stem
-    base.conv_stem = nn.Conv2d(1, stem.out_channels,
-                               kernel_size=stem.kernel_size,
-                               stride=stem.stride,
-                               padding=stem.padding,
-                               bias=False)
-    base.classifier = nn.Linear(base.classifier.in_features, num_classes)
-    # LoRA
-    lora_cfg = LoraConfig(
-        r=12, lora_alpha=24,
-        target_modules=TARGET_MODULES,
-        lora_dropout=0.1, bias="none",
-        modules_to_save=MODULES_TO_SAVE,
-        task_type="FEATURE_EXTRACTION",
-        inference_mode=False
-    )
-    return get_peft_model(base, lora_cfg)
+# TARGET_MODULES  = ["conv_pw","conv_dw","conv_pwl","conv_head"]
+# MODULES_TO_SAVE = ["classifier"]
+# def build_efficientnetb3_lora(num_classes):
+#     base = timm.create_model("efficientnet_b3", pretrained=True)
+#     # patch forward
+#     orig_fwd = base.forward
+#     def forward_patch(*args, input_ids=None, **kwargs):
+#         x = input_ids if input_ids is not None else args[0]
+#         return orig_fwd(x)
+#     base.forward = forward_patch
+#     # adapt stem & head
+#     stem = base.conv_stem
+#     base.conv_stem = nn.Conv2d(1, stem.out_channels,
+#                                kernel_size=stem.kernel_size,
+#                                stride=stem.stride,
+#                                padding=stem.padding,
+#                                bias=False)
+#     base.classifier = nn.Linear(base.classifier.in_features, num_classes)
+#     # LoRA
+#     lora_cfg = LoraConfig(
+#         r=12, lora_alpha=24,
+#         target_modules=TARGET_MODULES,
+#         lora_dropout=0.1, bias="none",
+#         modules_to_save=MODULES_TO_SAVE,
+#         task_type="FEATURE_EXTRACTION",
+#         inference_mode=False
+#     )
+#     return get_peft_model(base, lora_cfg)
 
-class RawAudioCNN(nn.Module):
-    def __init__(self, num_cls):
-        super().__init__()
-        self.conv1 = nn.Conv1d(1, 16,  kernel_size=15, stride=4, padding=7)
-        self.bn1   = nn.BatchNorm1d(16)
-        self.pool  = nn.MaxPool1d(4)
-        self.conv2 = nn.Conv1d(16,32,  kernel_size=15, stride=2, padding=7)
-        self.bn2   = nn.BatchNorm1d(32)
-        self.conv3 = nn.Conv1d(32,64,  kernel_size=15, stride=2, padding=7)
-        self.bn3   = nn.BatchNorm1d(64)
-        self.conv4 = nn.Conv1d(64,128, kernel_size=15, stride=2, padding=7)
-        self.bn4   = nn.BatchNorm1d(128)
-        self.global_pool = nn.AdaptiveAvgPool1d(1)
-        self.fc          = nn.Linear(128, num_cls)
-    def forward(self, x):
-        x = x.unsqueeze(1)  # [B,T]→[B,1,T]
-        x = F.relu(self.bn1(self.conv1(x))); x = self.pool(x)
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        x = F.relu(self.bn4(self.conv4(x)))
-        x = self.global_pool(x).squeeze(-1)
-        return self.fc(x)
+# class RawAudioCNN(nn.Module):
+#     def __init__(self, num_cls):
+#         super().__init__()
+#         self.conv1 = nn.Conv1d(1, 16,  kernel_size=15, stride=4, padding=7)
+#         self.bn1   = nn.BatchNorm1d(16)
+#         self.pool  = nn.MaxPool1d(4)
+#         self.conv2 = nn.Conv1d(16,32,  kernel_size=15, stride=2, padding=7)
+#         self.bn2   = nn.BatchNorm1d(32)
+#         self.conv3 = nn.Conv1d(32,64,  kernel_size=15, stride=2, padding=7)
+#         self.bn3   = nn.BatchNorm1d(64)
+#         self.conv4 = nn.Conv1d(64,128, kernel_size=15, stride=2, padding=7)
+#         self.bn4   = nn.BatchNorm1d(128)
+#         self.global_pool = nn.AdaptiveAvgPool1d(1)
+#         self.fc          = nn.Linear(128, num_cls)
+#     def forward(self, x):
+#         x = x.unsqueeze(1)  # [B,T]→[B,1,T]
+#         x = F.relu(self.bn1(self.conv1(x))); x = self.pool(x)
+#         x = F.relu(self.bn2(self.conv2(x)))
+#         x = F.relu(self.bn3(self.conv3(x)))
+#         x = F.relu(self.bn4(self.conv4(x)))
+#         x = self.global_pool(x).squeeze(-1)
+#         return self.fc(x)
     
 
 class EnsembleDataset(Dataset):

@@ -220,7 +220,7 @@ for epoch in range(1, EPOCHS+1):
         # optional mixup
         xb_m, ya, yb_m, lam = mixup(xb, yb)
         optimizer.zero_grad()
-        with autocast(device_type="cuda"):
+        with autocast(device_type="cuda", dtype=torch.bfloat16):
             logits = model(xb_m)
             loss   = lam*criterion(logits, ya) + (1-lam)*criterion(logits, yb_m)
         scaler.scale(loss).backward()
@@ -241,7 +241,7 @@ for epoch in range(1, EPOCHS+1):
     with torch.no_grad():
         for xb, yb, prim_idx in tqdm(test_loader, desc=f"[{epoch}/{EPOCHS}] Eval ", unit="batch"):
             xb, yb = xb.to(DEVICE), yb.to(DEVICE)
-            with autocast(device_type="cuda"):
+            with autocast(device_type="cuda", dtype=torch.bfloat16):
                 logits = model(xb)
                 val_loss += criterion(logits, yb).item()*xb.size(0)
                 scores   = torch.sigmoid(logits).cpu().numpy()

@@ -14,3 +14,7 @@ ray
 pynvml
 mlflow
 torchaudio
+fastapi
+uvicorn
+prefect
+ray[default]

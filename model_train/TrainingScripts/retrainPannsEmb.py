@@ -1,6 +1,8 @@
+#!/usr/bin/env python
 import os
+import sys
 import subprocess
-import psutil
+import argparse
 import numpy as np
 import pandas as pd
 import torch
@@ -10,18 +12,20 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 import mlflow
 import mlflow.pytorch
+from mlflow.tracking import MlflowClient
 from sklearn.metrics import f1_score, average_precision_score, precision_recall_curve
 from torch.amp import autocast, GradScaler
 from torch.optim.lr_scheduler import OneCycleLR
-import argparse
 
 # ---------------------- Argument Parsing ----------------------
-parser = argparse.ArgumentParser(description="Train Embedding MLP with configurable epochs")
+parser = argparse.ArgumentParser(description="Retrain Embedding MLP from MLflow Model Registry")
+parser.add_argument("--emb_model_name",        type=str,   default="PannsMLP_PrimaryLabel", help="Registry name for Embedding MLP")
+
 parser.add_argument(
     "--epochs", "-e",
     type=int,
     default=30,
-    help="number of training epochs"
+    help="number of retraining epochs"
 )
 parser.add_argument(
     "--batch_size",
@@ -41,32 +45,40 @@ parser.add_argument(
     default=1e-4,
     help="Weight decay"
 )
-
 args = parser.parse_args()
 
 birdclef_base_dir = os.getenv("BIRDCLEF_BASE_DIR", "/mnt/data")
-
-# ---------------------- Hyperparameters ----------------------
-EPOCHS       = args.epochs
-BATCH_SIZE     = args.batch_size
-LR             = args.lr
-WEIGHT_DECAY   = args.weight_decay 
-HIDDEN_DIMS   = [2048, 1024, 512]
-DROPOUT       = 0.5
-MIXUP_ALPHA   = 0.4
-FOCAL_GAMMA   = 2.0
-BEST_CKPT     = "best_emb_mlp.pth"
-
-DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", DEVICE)
 
+# ---------------------- Load base model from MLflow Registry ----------------------
+client     = MlflowClient()
+model_name = args.emb_model_name
+
+# fetch all versions registered under this name
+all_versions = client.search_model_versions(f"name = '{model_name}'")
+if not all_versions:
+    print(f"No registered model found for '{model_name}'. Exiting.")
+    sys.exit(0)
+
+# pick the highest version number
+latest = max(all_versions, key=lambda mv: int(mv.version))
+version = latest.version
+
+# load model via MLflow's models:/ URI (fetches from MinIO)
+model_uri = f"models:/{model_name}/{version}"
+print(f"Loading model from registry URI: {model_uri}")
+model     = mlflow.pytorch.load_model(model_uri).to(DEVICE)
+
 # ---------------------- MLflow Setup ----------------------
-mlflow.set_experiment("PannsMLP_PrimaryLabel")
+mlflow.set_experiment(f"{model_name}_Retrain")
 if mlflow.active_run():
     mlflow.end_run()
 run = mlflow.start_run(log_system_metrics=True)
-
 print(f"MLFLOW_RUN_ID={run.info.run_id}")
+
+mlflow.log_param("base_model_name",    model_name)
+mlflow.log_param("base_model_version", version)
 
 # log GPU/CPU info
 gpu_info = next(
@@ -79,7 +91,17 @@ gpu_info = next(
 )
 mlflow.log_text(gpu_info, "gpu-info.txt")
 
-# log hyperparameters
+# ---------------------- Hyperparameters ----------------------
+EPOCHS       = args.epochs
+BATCH_SIZE     = args.batch_size
+LR             = args.lr
+WEIGHT_DECAY   = args.weight_decay 
+HIDDEN_DIMS  = [2048, 1024, 512]
+DROPOUT      = 0.5
+MIXUP_ALPHA  = 0.4
+FOCAL_GAMMA  = 2.0
+BEST_CKPT    = "best_emb_mlp_retrain.pth"
+
 mlflow.log_params({
     "batch_size":   BATCH_SIZE,
     "lr":           LR,
@@ -105,16 +127,16 @@ class EmbeddingDataset(Dataset):
         meta["secs"] = meta.secondary_labels.fillna("").str.split()
         sec_map = dict(zip(meta.rid, meta.secs))
 
-        self.rows = []
+        self.rows   = []
+        self.idx_map = {c:i for i,c in enumerate(classes)}
+        self.num_cls = len(classes)
+        self.key     = key
+
         for _, row in tqdm(m.iterrows(), total=len(m), desc="Building dataset"):
             rid         = row.chunk_id.split("_chk")[0]
             labs        = [row.primary_label] + sec_map.get(rid, [])
             primary_cls = row.primary_label
             self.rows.append((row.emb_path, labs, primary_cls))
-
-        self.idx_map = {c:i for i,c in enumerate(classes)}
-        self.num_cls = len(classes)
-        self.key     = key
 
     def __len__(self):
         return len(self.rows)
@@ -137,54 +159,34 @@ def mixup(x, y, alpha=MIXUP_ALPHA):
     idx = torch.randperm(x.size(0), device=x.device)
     return lam*x + (1-lam)*x[idx], y, y[idx], lam
 
-# ---------------------- Data Loading ----------------------
-TAXONOMY_CSV    = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "taxonomy.csv")
-TRAIN_MAN       = os.path.join(birdclef_base_dir, "Features", "manifest_train.csv")
-TEST_MAN        = os.path.join(birdclef_base_dir, "Features", "manifest_test.csv")
-TRAIN_META      = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "train.csv")
-FEATURE_BASE    = os.path.join(birdclef_base_dir, "Features")
+# ---------------------- Data Loading (VAL instead of TRAIN) ----------------------
+TAXONOMY_CSV = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "taxonomy.csv")
+VAL_MAN      = os.path.join(birdclef_base_dir, "Features", "manifest_val.csv")
+TEST_MAN     = os.path.join(birdclef_base_dir, "Features", "manifest_test.csv")
+TRAIN_META   = os.path.join(birdclef_base_dir, "Data", "birdclef-2025", "train.csv")
+FEATURE_BASE = os.path.join(birdclef_base_dir, "Features")
 
 tax_df     = pd.read_csv(TAXONOMY_CSV)
 CLASSES    = sorted(tax_df["primary_label"].astype(str).tolist())
 NUM_CLASSES= len(CLASSES)
 
-train_ds = EmbeddingDataset(TRAIN_MAN, TRAIN_META, FEATURE_BASE, CLASSES)
-test_ds  = EmbeddingDataset(TEST_MAN,  TRAIN_META, FEATURE_BASE, CLASSES)
+train_ds = EmbeddingDataset(VAL_MAN, TRAIN_META, FEATURE_BASE, CLASSES)
+test_ds  = EmbeddingDataset(TEST_MAN, TRAIN_META, FEATURE_BASE, CLASSES)
 
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE,
                           shuffle=True,  num_workers=4, pin_memory=True)
 test_loader  = DataLoader(test_ds,  batch_size=BATCH_SIZE,
                           shuffle=False, num_workers=4, pin_memory=True)
 
-# ---------------------- Model Definition ----------------------
-class EmbeddingClassifier(nn.Module):
-    def __init__(self, emb_dim, num_cls):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(emb_dim,  HIDDEN_DIMS[0]),
-            nn.BatchNorm1d(HIDDEN_DIMS[0]), nn.ReLU(), nn.Dropout(DROPOUT),
-            nn.Linear(HIDDEN_DIMS[0],HIDDEN_DIMS[1]),
-            nn.BatchNorm1d(HIDDEN_DIMS[1]), nn.ReLU(), nn.Dropout(DROPOUT),
-            nn.Linear(HIDDEN_DIMS[1],HIDDEN_DIMS[2]),
-            nn.BatchNorm1d(HIDDEN_DIMS[2]), nn.ReLU(), nn.Dropout(DROPOUT),
-            nn.Linear(HIDDEN_DIMS[2],num_cls)
-        )
-    def forward(self, x):
-        return self.net(x)
-
-sample_x, _, _ = train_ds[0]
-emb_dim        = sample_x.shape[0]
-model          = EmbeddingClassifier(emb_dim, NUM_CLASSES).to(DEVICE)
-mlflow.log_param("input_dim", emb_dim)
-
 # ---------------------- Loss, Optimizer, Scheduler ----------------------
+# recompute pos_weight on VAL set for focal loss
 counts = np.zeros(NUM_CLASSES, dtype=int)
 for _, labs, _ in train_ds.rows:
     for c in labs:
         idx = train_ds.idx_map.get(c)
         if idx is not None:
             counts[idx] += 1
-n = len(train_ds)
+n   = len(train_ds)
 neg = n - counts
 pw  = np.ones(NUM_CLASSES, dtype=np.float32)
 mask= counts>0
@@ -214,14 +216,6 @@ scheduler = OneCycleLR(
     div_factor=10
 )
 scaler    = GradScaler()
-
-mlflow.log_params({
-    "optimizer":     "AdamW",
-    "criterion":     "FocalLoss",
-    "focal_gamma":   FOCAL_GAMMA,
-    "scheduler":     "OneCycleLR",
-    "mixup_alpha":   MIXUP_ALPHA
-})
 
 # ---------------------- Training Loop ----------------------
 best_f1, best_ap = 0.0, 0.0
@@ -279,7 +273,6 @@ for epoch in range(1, EPOCHS+1):
     preds     = (scores >= thresholds).astype(int)
     micro_f1  = f1_score(tgts, preds, average="micro", zero_division=0)
     micro_ap  = average_precision_score(tgts, scores, average="micro")
-
     top1      = scores.argmax(axis=1)
     primary_acc = (top1 == prims).mean()
 
@@ -301,8 +294,8 @@ for epoch in range(1, EPOCHS+1):
 mlflow.log_metric("best_micro_f1", best_f1)
 mlflow.log_metric("best_micro_ap", best_ap)
 
-LOCAL_MODEL_DIR = "Panns_Emb_MLP_model"
+LOCAL_MODEL_DIR = "Panns_Emb_MLP_model_retrain"
 mlflow.pytorch.save_model(model, LOCAL_MODEL_DIR)
-mlflow.log_artifacts(LOCAL_MODEL_DIR, artifact_path="panns_emb_mlp_model")
+mlflow.log_artifacts(LOCAL_MODEL_DIR, artifact_path="panns_emb_mlp_model_retrain")
 
 mlflow.end_run()
