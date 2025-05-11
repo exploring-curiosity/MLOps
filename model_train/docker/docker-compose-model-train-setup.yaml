@@ -38,10 +38,10 @@ services:
     volumes:
       - ray_tmp:/tmp/ray
     environment:
-      - RAY_RUNTIME_ENV_CONTAINER_PROVIDER=docker
-      - AWS_ACCESS_KEY_ID=your-access-key
-      - AWS_SECRET_ACCESS_KEY=your-secret-key
-      - AWS_ENDPOINT_URL=http://129.114.26.212:9000
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ENDPOINT_URL=${MINIO_ENDPOINT}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
     user: root
 
   ray-worker-0:
@@ -61,10 +61,10 @@ services:
     shm_size: '24g'
     environment:
       - RAY_RUNTIME_ENV_CONTAINER_PROVIDER=docker
-      - AWS_ACCESS_KEY_ID=your-access-key
-      - AWS_SECRET_ACCESS_KEY=your-secret-key
-      - AWS_ENDPOINT_URL=http://129.114.26.212:9000
-      - MLFLOW_TRACKING_URI="http://129.114.26.212:8000/"
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ENDPOINT_URL=${MINIO_ENDPOINT}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
     volumes:
       - features_data:/mnt
     depends_on:
