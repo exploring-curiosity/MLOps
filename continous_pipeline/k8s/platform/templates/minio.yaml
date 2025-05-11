@@ -3,30 +3,19 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: minio-pvc
-  namespace: gourmetgram-platform
+  namespace: birdclef-platform
 spec:
   accessModes:
     - ReadWriteOnce
-#  nodeAffinity:
-#    required:
-#      nodeSelectorTerms:
-#        - matchExpressions:
-#            - key: kubernetes.io/hostname
-#              operator: In
-#              values:
-#                - node1
   resources:
     requests:
       storage: 5Gi
-  local:
-    path: /home/cc/test
-
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
-  namespace: gourmetgram-platform
+  namespace: birdclef-platform
 spec:
   replicas: 1
   selector:
@@ -60,6 +49,9 @@ spec:
               mountPath: /data
       volumes:
         - name: minio-storage
+          hostPath:
+            path: /mnt/block
+            type: Directory
           persistentVolumeClaim:
             claimName: minio-pvc
 ---
@@ -67,7 +59,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio
-  namespace: gourmetgram-platform
+  namespace: birdclef-platform
 spec:
   selector:
     app: minio
@@ -85,7 +77,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: minio-create-bucket
-  namespace: gourmetgram-platform
+  namespace: birdclef-platform
   annotations:
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
