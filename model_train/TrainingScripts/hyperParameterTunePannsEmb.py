@@ -12,7 +12,7 @@ import argparse
 
 from ray import tune
 from ray.tune.schedulers import ASHAScheduler
-from ray.tune.integration.mlflow import MLflowLoggerCallback
+from ray.air.integration.mlflow import MLflowLoggerCallback
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Dataset + model definitions (copied from your training script)

@@ -10,8 +10,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
-import timm
-from peft import get_peft_model, LoraConfig
 import mlflow
 import mlflow.pytorch
 from mlflow.tracking import MlflowClient
