@@ -65,6 +65,7 @@ services:
       - AWS_ACCESS_KEY_ID=your-access-key
       - AWS_SECRET_ACCESS_KEY=your-secret-key
       - AWS_ENDPOINT_URL=http://minio:9000
+      - MLFLOW_TRACKING_URI="http://129.114.26.212:8000/"
     volumes:
       - features_data:/mnt
     depends_on:

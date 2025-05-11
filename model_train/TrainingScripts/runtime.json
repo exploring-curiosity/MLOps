@@ -1,6 +1,6 @@
 {
     "pip": "requirements.txt",
     "env_vars": {
-      "BIRDCLEF_BASE_DIR": "/mnt/data"
+      "BIRDCLEF_BASE_DIR": "/mnt"
     }
 }
