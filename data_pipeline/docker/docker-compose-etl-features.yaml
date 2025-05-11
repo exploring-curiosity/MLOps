@@ -1,0 +1,45 @@
+version: "3.9"
+
+volumes:
+  etl_volume: {}
+
+services:
+  extract-features:
+    container_name: etl_features
+    image: python:3.11
+    user: root
+    environment:
+      - RCLONE_CONTAINER=object-persist-project38
+    volumes:
+      - etl_volume:/workspace/tmp_features
+      - ../scripts:/workspace/scripts
+      - ~/.config/rclone:/config/rclone:ro
+    working_dir: /workspace/tmp_features
+    command: >
+      bash -c "
+        set -e
+        echo '[INFO] Cleaning disk before feature extraction...'
+        rm -rf /workspace/tmp_features/* || true
+
+        echo '[INFO] Downloading denoised audio from object store...'
+        rclone copy chi_uc:$RCLONE_CONTAINER/processed/denoised /workspace/tmp_features/denoised --progress
+
+        echo '[INFO] Installing requirements...'
+        pip install -r /workspace/scripts/requirements_features.txt
+
+        echo '[INFO] Running feature extraction pipeline...'
+        python /workspace/scripts/precompute_features.py \
+            --input_dir /workspace/tmp_features/denoised \
+            --output_root /workspace/tmp_features
+
+        echo '[INFO] Uploading outputs to object store...'
+        rclone copy /workspace/tmp_features/mel chi_uc:$RCLONE_CONTAINER/processed/mel --progress
+        rclone copy /workspace/tmp_features/embeddings chi_uc:$RCLONE_CONTAINER/processed/embeddings --progress
+        rclone copy /workspace/tmp_features/mel_aug chi_uc:$RCLONE_CONTAINER/processed/mel_aug --progress
+        rclone copy /workspace/tmp_features/mel/manifest.csv chi_uc:$RCLONE_CONTAINER/processed/mel/
+        rclone copy /workspace/tmp_features/embeddings/manifest.csv chi_uc:$RCLONE_CONTAINER/processed/embeddings/
+        rclone copy /workspace/tmp_features/mel_aug/manifest.csv chi_uc:$RCLONE_CONTAINER/processed/mel_aug/
+
+        echo '[INFO] Cleaning up local disk...'
+        rm -rf /workspace/tmp_features/*
+      "

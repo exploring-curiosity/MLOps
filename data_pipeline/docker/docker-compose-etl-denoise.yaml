@@ -4,30 +4,73 @@ volumes:
   etl_volume: {}
 
 services:
-  denoise-audio:
-    container_name: etl_denoise_audio
+  download-denoise-input:
+    container_name: etl_download_denoise_input
+    image: rclone/rclone:latest
+    environment:
+      - RCLONE_CONTAINER=object-persist-project38
+    volumes:
+      - etl_volume:/workspace/tmp_denoise
+      - ~/.config/rclone:/config/rclone:ro
+    entrypoint: /bin/sh
+    command: >
+      -c "
+        set -e
+        echo '[INFO] Downloading input data for denoising...'
+        rclone copy chi_uc:$RCLONE_CONTAINER/raw/train_audio /workspace/tmp_denoise/train_audio --progress
+        echo '[INFO] Download complete. Listing:'
+        ls -lh /workspace/tmp_denoise/train_audio | head
+      "
+
+  denoise:
+    container_name: etl_denoise
     image: python:3.11
     user: root
     volumes:
-      - etl_volume:/workspace/tmp_features
+      - etl_volume:/workspace/tmp_denoise
       - ../scripts:/workspace/scripts:ro
-    working_dir: /workspace/tmp_features
-    entrypoint: /bin/bash
+    working_dir: /workspace/tmp_denoise
     command: >
-      -c "
-        echo '[INFO] Cleaning up old docker containers/volumes...'
-        docker container prune -f || true
-        docker volume prune -f || true
-
-        echo '[INFO] Installing dependencies...'
-        pip install --quiet -r /workspace/scripts/requirements_denoise.txt
+      bash -c "
+        set -e
+        echo '[INFO] Installing requirements...'
+        pip install -r /workspace/scripts/requirements_denoise.txt --quiet
 
         echo '[INFO] Starting denoising...'
         python /workspace/scripts/denoise_chunks.py \
-          --input_dir /workspace/tmp_download/birdclef-2025/train_audio \
-          --csv_path /workspace/tmp_download/birdclef-2025/train.csv \
-          --output_dir /workspace/tmp_features/denoised
+          --input_dir /workspace/tmp_denoise/train_audio \
+          --output_dir /workspace/tmp_denoise/denoised
 
-        echo '[INFO] Denoising complete. Sample files:'
-        find /workspace/tmp_features/denoised -type f | head -n 10
+        echo '[INFO] Denoising complete. Sample output:'
+        ls -lh /workspace/tmp_denoise/denoised | head
+      "
+
+  upload-denoised:
+    container_name: etl_upload_denoised
+    image: rclone/rclone:latest
+    environment:
+      - RCLONE_CONTAINER=object-persist-project38
+    volumes:
+      - etl_volume:/workspace/tmp_denoise
+      - ~/.config/rclone:/config/rclone:ro
+    entrypoint: /bin/sh
+    command: >
+      -c "
+        set -e
+        echo '[INFO] Uploading denoised audio and manifest to object store...'
+        rclone copy /workspace/tmp_denoise/denoised chi_uc:$RCLONE_CONTAINER/processed/denoised --progress
+        echo '[INFO] Upload complete!'
+      "
+
+  cleanup-denoise:
+    container_name: etl_cleanup_denoise
+    image: alpine:latest
+    volumes:
+      - etl_volume:/workspace/tmp_denoise
+    entrypoint: /bin/sh
+    command: >
+      -c "
+        echo '[INFO] Cleaning up temporary disk space...'
+        rm -rf /workspace/tmp_denoise/*
+        echo '[INFO] Cleanup done.'
       "

@@ -1,0 +1,36 @@
+version: "3.9"
+
+volumes:
+  etl_volume: {}
+
+services:
+  generate-manifests:
+    container_name: etl_generate_manifests
+    image: python:3.11
+    user: root
+    volumes:
+      - etl_volume:/workspace/tmp_manifests
+      - ../scripts:/workspace/scripts
+      - ~/.config/rclone:/config/rclone:ro
+    working_dir: /workspace/tmp_manifests
+    environment:
+      - RCLONE_CONTAINER=object-persist-project38
+    command: >
+      bash -c "
+        echo '[INFO] Cleaning local disk...'
+        rm -rf /workspace/tmp_manifests/*
+
+        echo '[INFO] Downloading features from object store...'
+        rclone copy chi_uc:$RCLONE_CONTAINER/processed/ /workspace/tmp_manifests/processed/ --progress
+
+        echo '[INFO] Installing Python dependencies...'
+        pip install --no-cache-dir pandas numpy
+
+        echo '[INFO] Running manifest generation script...'
+        python /workspace/scripts/generate_manifests.py
+
+        echo '[INFO] Uploading updated manifests...'
+        rclone copy /workspace/tmp_manifests/processed/ chi_uc:$RCLONE_CONTAINER/processed/ --progress
+
+        echo '[INFO] Manifest pipeline complete.'
+      "

@@ -1,77 +1,65 @@
 import os
 import math
+import argparse
 import pandas as pd
+import numpy as np
 import soundfile as sf
+import librosa
+import noisereduce as nr
 from tqdm import tqdm
-from pydub import AudioSegment
-import torch
-import torchaudio
-from demucs.pretrained import get_model
-from demucs.apply import apply_model
 
-# ─── CONFIG ───────────────────────────────────────────────────────────────
-DATA_ROOT = "/workspace/tmp_download/birdclef-2025"
-AUDIO_DIR = os.path.join(DATA_ROOT, "train_audio")
-CSV_PATH = os.path.join(DATA_ROOT, "train.csv")
-OUTPUT_DIR = os.path.join(DATA_ROOT, "denoised_chunks")
+CHUNK_SEC = 10
 SAMPLE_RATE = 32000
-CHUNK_DURATION = 10  # in seconds
-CHUNK_SAMPLES = SAMPLE_RATE * CHUNK_DURATION
+CHUNK_SAMPLES = CHUNK_SEC * SAMPLE_RATE
+PROP_DECREASE = 0.9
 
-# ─── LOAD METADATA ────────────────────────────────────────────────────────
-df = pd.read_csv(CSV_PATH)
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+def denoise_and_chunk(input_dir, output_dir):
+    os.makedirs(output_dir, exist_ok=True)
+    manifest = []
 
-# ─── LOAD DEMUCS MODEL ────────────────────────────────────────────────────
-print("[INFO] Loading Demucs model...")
-model = get_model(name="htdemucs").cpu()
-model.eval()
+    for label in sorted(os.listdir(input_dir)):
+        label_path = os.path.join(input_dir, label)
+        if not os.path.isdir(label_path):
+            continue
 
-# ─── DENOISE FUNCTION ─────────────────────────────────────────────────────
-def denoise_with_demucs(waveform, sr):
-    with torch.no_grad():
-        ref = waveform.mean(0)
-        normalized = (waveform - ref.mean()) / (ref.std() + 1e-9)
-        sources = apply_model(model, normalized.unsqueeze(0), samplerate=sr, split=True, progress=False, num_workers=0)[0]
-        denoised = sources[0]  # vocals/stems[0] (cleaned audio)
-    return denoised.squeeze().numpy()
+        out_label_dir = os.path.join(output_dir, label)
+        os.makedirs(out_label_dir, exist_ok=True)
 
-# ─── PROCESS AUDIO FILES ──────────────────────────────────────────────────
-for _, row in tqdm(df.iterrows(), total=len(df), desc="[INFO] Denoising & Chunking"):
-    fname = row["filename"]
-    label = row["primary_label"]
-    src_fp = os.path.join(AUDIO_DIR, fname)
+        for file in tqdm(os.listdir(label_path), desc=f"{label}"):
+            if not file.endswith(".ogg"):
+                continue
 
-    if not os.path.exists(src_fp):
-        print(f"[WARN] Missing file: {src_fp}")
-        continue
+            chunk_base = os.path.splitext(file)[0]
+            file_path = os.path.join(label_path, file)
+            y, sr = sf.read(file_path, dtype="float32")
+            if y.ndim > 1:
+                y = y.mean(axis=1)
+            if sr != SAMPLE_RATE:
+                y = librosa.resample(y, orig_sr=sr, target_sr=SAMPLE_RATE)
 
-    # Read and normalize
-    waveform, sr = torchaudio.load(src_fp)
-    if waveform.shape[0] > 1:
-        waveform = waveform.mean(dim=0, keepdim=True)
-    if sr != SAMPLE_RATE:
-        waveform = torchaudio.transforms.Resample(sr, SAMPLE_RATE)(waveform)
-        sr = SAMPLE_RATE
+            n_chunks = math.ceil(len(y) / CHUNK_SAMPLES)
+            for ci in range(n_chunks):
+                seg = y[ci*CHUNK_SAMPLES:(ci+1)*CHUNK_SAMPLES]
+                if len(seg) < CHUNK_SAMPLES:
+                    seg = np.pad(seg, (0, CHUNK_SAMPLES - len(seg)), mode='constant')
 
-    # Apply denoising
-    denoised = denoise_with_demucs(waveform[0], sr)
+                den = nr.reduce_noise(y=seg, sr=SAMPLE_RATE, stationary=False, prop_decrease=PROP_DECREASE)
+                den /= (np.max(np.abs(den)) + 1e-9)
 
-    # Chunk and save
-    base_name = os.path.splitext(os.path.basename(fname))[0]
-    label_dir = os.path.join(OUTPUT_DIR, label)
-    os.makedirs(label_dir, exist_ok=True)
-    n_chunks = math.ceil(len(denoised) / CHUNK_SAMPLES)
+                chunk_id = f"{chunk_base}_chk{ci}"
+                rel_path = os.path.join(label, f"{chunk_id}.ogg")
+                out_path = os.path.join(out_label_dir, f"{chunk_id}.ogg")
+                sf.write(out_path, den, SAMPLE_RATE, format="OGG", subtype="VORBIS")
+                manifest.append({"chunk_id": chunk_id, "audio_path": f"/{rel_path}", "primary_label": label})
 
-    for i in range(n_chunks):
-        start = i * CHUNK_SAMPLES
-        end = start + CHUNK_SAMPLES
-        chunk = denoised[start:end]
-        if len(chunk) < CHUNK_SAMPLES:
-            pad = CHUNK_SAMPLES - len(chunk)
-            chunk = torch.nn.functional.pad(torch.tensor(chunk), (0, pad)).numpy()
+    manifest_path = os.path.join(output_dir, "manifest.csv")
+    pd.DataFrame(manifest).to_csv(manifest_path, index=False)
+    print(f"[INFO] Wrote manifest with {len(manifest)} entries to {manifest_path}")
 
-        chunk_path = os.path.join(label_dir, f"{base_name}_chk{i}.ogg")
-        sf.write(chunk_path, chunk, sr, format='OGG', subtype='VORBIS')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input_dir", type=str, required=True, help="Directory with raw train_audio/")
+    parser.add_argument("--output_dir", type=str, required=True, help="Where to write denoised chunks")
+    args = parser.parse_args()
 
-print("[INFO] Denoising and chunking complete.")
+    denoise_and_chunk(args.input_dir, args.output_dir)

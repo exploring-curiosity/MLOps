@@ -1,0 +1,22 @@
+version: "3.9"
+
+volumes:
+  etl_volume: {}
+
+services:
+  cleanup-workspace:
+    container_name: etl_cleanup
+    image: alpine:latest
+    volumes:
+      - etl_volume:/workspace
+    entrypoint: /bin/sh
+    command: >
+      -c "
+        echo '[INFO] Cleaning up disk at /workspace...'
+        rm -rf /workspace/*
+
+        echo '[INFO] Verifying workspace is now empty:'
+        ls -lh /workspace
+
+        echo '[INFO] Cleanup complete. Exiting.'
+      "
