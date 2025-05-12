@@ -1,3 +1,4 @@
+
 version: "3.8"
 name: fastapi_test
 
@@ -9,6 +10,8 @@ services:
       dockerfile: Dockerfile
     container_name: fastapi_server
     runtime: nvidia
+    depends_on:
+      - triton_server
     deploy:
       resources:
         reservations:
@@ -28,16 +31,21 @@ services:
     container_name: triton_server
     runtime: nvidia
     ports:
-      - "8081:8000"  # Triton HTTP
-      - "8001:8001"  # gRPC (optional)
-      - "8002:8002"  # Prometheus metrics
+      - "8081:8000"  # HTTP
+      - "8001:8001"  # gRPC
+      - "8002:8002"  # Prometheus
     volumes:
       - ./models:/models
     command: >
-      tritonserver \
-      --model-repository=/models \
-      --model-control-mode=poll \
-      --strict-model-config=false
+      bash -c "
+        tritonserver \
+          --model-repository=/models \
+          --model-control-mode=poll \
+          --strict-model-config=false \
+          --log-verbose 1 & 
+        tail -f /dev/null"
+
+
 
   jupyter:
     container_name: jupyter
