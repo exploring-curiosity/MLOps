@@ -1,6 +1,8 @@
 
 # Continous X Pipeline
 
+![ResourcesProvisioned.png](../assets/ResourcesProvisioned.png)
+
 ## 1. Selecting Site
 
 The Continous X Pipeline manages infrastructure mostly in KVM@TACC. So let's select the site!
