@@ -45,3 +45,7 @@ data "openstack_networking_secgroup_v2" "allow_http_80" {
 data "openstack_networking_secgroup_v2" "allow_9090" {
   name = "allow-9090"
 }
+
+data "openstack_blockstorage_volume_v3" "existing_volume" {
+  name = "block-persist-bird-classification-project38"
+}

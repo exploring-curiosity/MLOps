@@ -10,6 +10,18 @@
     minio_access_key: "your-access-key"
 
   tasks:
+    #- name: Create Mount Directory
+    #  command: sudo mkdir -p /mnt/block
+
+    #- name: Add Mount
+    #  command: sudo mkdir -p /mnt/block
+
+    #- name: Check if /mnt/block is already mounted
+    #  command: mountpoint -q /mnt/block
+    #  register: mount_check
+    #  ignore_errors: true
+    #  changed_when: false
+
     - name: Get ArgoCD admin password from Kubernetes secret
       command: >
         kubectl get secret -n argocd argocd-initial-admin-secret \
