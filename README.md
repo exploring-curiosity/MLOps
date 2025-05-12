@@ -103,147 +103,191 @@ diagram, (3) justification for your strategy, (4) relate back to lecture materia
 (5) include specific numbers. -->
 
 #### Model training and training platforms
+For Starting the server follow through the notebook after creatign a lease (mlops_train_project38)
+[Getting_Started](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Getting_started.ipynb)
+After the Server is up and Running we have to connect to the Object Store. It can be done with:
+[Load_Data](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/LoadData.ipynb)
+Following that the Nvidia Tool Kit setup and fastAPI server and Ray workers can be configure with the notebook in (Optional Infra and Jupyter Notebook):
+[Nvidia_Setup](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Nvidia_setup.ipynb)
 
-This section details the plan to satisfy Unit 4 and Unit 5 requirements, incorporating learnings from the course units.
+This below section details the plan to satisfy Unit 4 and Unit 5 requirements, incorporating learnings from the course units.
 
 **Requirement 4.1: Train and Re-train At Least One Model**
+- **Trained models**  
+  - **RawAudioCNN** (1D CNN on denoised waveform)  [Notebook](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Notebooks/Multi_label/RawAudioCnnMultiLabel.ipynb) [Script]()
+  - **PannsEmbMLP** (MLP on PANNs embeddings)  [Notebook](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Notebooks/Multi_label/PannsEmbMultiLabel.ipynb) [Script]()
+  - **EfficientNet‑B3 (LoRA + fp16 Mixed Precision)**  [Notebook](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Notebooks/Multi_label/EffNetB3MultiLabel.ipynb) [Script]()
+  - **ResNet50** (on augmented mel)  [Notebook](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Notebooks/Multi_label/ResNet50MultiLabel.ipynb) [Script]()
+  - **MetaMLP** (supervisor aggregator)  [Notebook](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Notebooks/Multi_label/MetaMLPMultiLabel.ipynb) [Script]()
+- **Frozen feature extractor**  
+  - **Panns CNN14** is _not_ trained or retrained; it only provides embeddings.  
+- **Retraining pipeline** 
+ [RawAudioCNN](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/retrainRawCNN.py)
+ [EffNetB3_Lora](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/retrainEffNetB3.py)
+ [ResNet50](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/retrainResNet50.py)
+ [PannsEmbMLP](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/retrainPannsEmb.py)
+ [MetaMLP](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/retrainMetaMLP.py)
+  - Each of the five trainable heads has a corresponding “retrain” script that:  
+    1. Pulls latest models from the past experiments and registered valid models. 
+    2. Fine‑tunes for _N_ additional epochs on a mentioned data. 
+    3. Logs updated weights back to the registry.  
+  - Trigger via FastAPI endpoint, e.g.:  
+    ```
+    POST http://{fip}:9090/retrain_model?model_name=<head>&epochs=<k>
+    ```  
+**Requirement 4.2: Modeling Choices & Justifications**
+1. **Feature‑level specialization**  [Sample_Preprocessing_Showcase](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Notebooks/AudioPreprocessingSample.ipynb)
+   - **Denoised waveform → RawAudioCNN**  
+     - Learns temporal filters on raw audio without spectrogram information loss  
+   - **PANNs embeddings → PannsEmbMLP**  
+     - High‑level timbral/pitch features from CNN14, mapped to 206‑way multi‑label output  
+   - **Mel spectrogram → EfficientNet‑B3 (LoRA)**  
+     - Leverages ImageNet pretraining; fine‑tunes only low‑rank adapters for efficiency  
+   - **Augmented mel (mel + PANNs embeddings) → ResNet50**  
+     - Deeper residual blocks exploit richer combined representation  
+   - **Supervisor (MetaMLP)**  
+     - Fuses the four multi‑label probability vectors, outputs final multi‑label set  
+     - Primary label = highest score; secondary labels = all scores above a threshold  
+    Below Notebook Will do all the processing and store it into feature chunks of 10sec duration: [PreComputeFeatures](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/Notebooks/PrecomputeFeatures.ipynb)
+2. **Why these architectures?**  
+   - **Panns CNN14** as frozen extractor → robust embeddings, zero extra training cost  
+   - **EfficientNet‑B3** → balanced capacity vs. compute; LoRA & fp16 minimize resource footprint  
+   - **RawAudioCNN / PannsEmbMLP** → lightweight, trainable from scratch on a single GPU  
+   - **MetaMLP** → shallow fusion head avoids overfitting when combining heterogeneous outputs  
 
-1.  **Strategy:** Train **ResNet-50** classifier from scratch using `train_audio`. Fine-tune **EfficientNet-B0** and **Google Perch**. Based on techniques explored in Unit 4 for handling memory limits with larger models, anticipate applying memory-saving strategies like **reduced precision (bf16)**, **gradient accumulation**, or potentially the **SGD optimizer** for the ResNet-50 training if Adam proves too memory-intensive. Address the "re-train" requirement via a simulation: use a time-split of `train_audio` (older \~70% initial train, newer \~30% re-train) based on scraped Xeno-canto timestamps, using only provided data to mimic adaptation to temporal drift. Implement this re-training process as a pipeline on Ray, manually triggered.
-2.  **Relevant Diagram Parts:** Training Pipeline, Data Storage (time-split `train_audio`), versioned Model Weights storage.
-3.  **Justification:** Meets train/re-train requirements using only provided data. Time-split simulates realistic adaptation scenario. Leverages memory-saving techniques demonstrated as effective in Unit 4 if required for the ResNet-50 scratch training. Contingent on successful timestamp scraping (requires implementation/error handling).
-4.  **Relation to Lecture Material:** Memory Optimization Techniques (Reduced Precision, Gradient Accumulation, Optimizers like SGD vs Adam), Ray Framework (for pipeline execution).
-5.  **Specifics:** Initial Data: \~70% `train_audio` (\~5.5 GB). Re-train Data: \~30% `train_audio` (\~2.3 GB). Split via scraped timestamps. Initial ResNet-50 epochs: \~75. Re-train epochs: \~10-20. Requires scraping script with error handling. Models versioned. Evaluate need for bf16/SGD/GradAcc during initial ResNet-50 training based on observed memory usage.
+**Difficulty Point: Training Strategies for Large Models**  [Default with Lora](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/trainEffNetB3WithoutMixedPrecison.py) [With Precision and Lora](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/trainEffNetB3.py)
+- **LoRA adapters on EfficientNet‑B3**  
+  - Only low‑rank matrices are trainable; most weights remain frozen  
+  - Reduces trainable parameters by > 66%  
+- **Mixed‑precision (fp16) with `torch.amp.autocast`**  
+  - Speeds up conv/transformer layers and increases batch size  
+ 
 
-**Requirement 4.2: Modeling Choices**
+**Requirement 5.1: Experiment Tracking** [Docker Setup](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/docker/docker-compose-model-train-setup.yaml)
+   - **Hosted server:** Deployed an MLflow tracking server on a Chameleon VM, with MinIO running alongside as an S3‑compatible artifact store.  
+   - **Instrumentation:** Each training and tuning script calls `mlflow.log_param()`, `mlflow.log_metric()`, and `mlflow.pytorch.log_model()` so that every run’s hyperparameters, metrics, and artifacts are persisted.  
+   - **Workflow:**  
+     1. Start MinIO container and MLflow server on Chameleon  
+     2. Point `MLFLOW_TRACKING_URI` and `MINIO_ENDPOINT_URL` to those services  
+     3. Run training/tuning; inspect via the MLflow UI  
 
-1.  **Strategy:** Employ a multi-model ensemble for classifying 206 species: (a) **ResNet-50** (scratch-trained), (b) **EfficientNet-B0** (fine-tuned), (c) **Google Perch** (fine-tuned). Leverage the parameter efficiency of EfficientNet-B0 (\~5M params) and potentially Perch. For fine-tuning these, utilize **Parameter-Efficient Fine-Tuning (PEFT) via LoRA**, leveraging methods explored in Unit 4 that demonstrate significant memory savings for fine-tuning, potentially combined with **Quantization (e.g., nf4)** if further memory reduction is needed. Incorporate features from a pre-trained **PANNs (CNN14)** for SED during inference. Process 32kHz OGG audio into Mel spectrograms. Handle multi-label classification. Output probabilities per 5-second interval for evaluation simulation, and handle short segments for the API.
-2.  **Relevant Diagram Parts:** Inference Pipeline (SED input, Spectrograms, 3 Classifiers, Ensemble Logic), Data Storage (audio, spectrograms).
-3.  **Justification:** Ensemble targets robustness. Model diversity. PEFT/LoRA provides an efficient fine-tuning path, building on Unit 4 explorations. Pre-trained SED leverages existing work. Meets "3+ models" and "composed models" criteria. Addresses data specifics and output requirements.
-4.  **Relation to Lecture Material:** Parameter-Efficient Fine-Tuning (PEFT/LoRA), Quantization (nf4).
-5.  **Specifics:** Classifiers: ResNet-50 (\~25.6M params, scratch), EfficientNet-B0 (\~5M params, LoRA fine-tune), Google Perch (LoRA fine-tune). SED: PANNs (CNN14). Input: 32kHz audio -> Mel spectrograms (128 bands). Output: 206 species probabilities. Ensemble: Weighted averaging. Metric: mAP > 0.5 target. Consider nf4 quantization during PEFT if memory is constrained.
+**Requirement 5.2: Scheduling training jobs**  [FastAPI Server](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/main.py)
+   - **Ray cluster on Chameleon:** Launched a head node and multiple worker nodes using Ray’s Ansible scripts on Chameleon.  
+   - **Submission pipeline:** Training scripts (`train*.py` and `retrain*.py`) are invoked via `ray job submit --no-wait`, which returns a Job ID.  
+   - **FastAPI integration:** A `/train_model` and `/retrain_model` endpoint wraps the `ray job submit` call, returns the Ray Job ID immediately, and lets you poll `/status?job_id=<ID>` to see progress and capture the `MLFLOW_RUN_ID`.  
 
-**Requirement 4.3 (Difficulty Point): Use Distributed Training to Increase Velocity**
-
-1.  **Strategy:** Use **PyTorch FSDP (Fully Sharded Data Parallel)** for the ResNet-50 scratch training, targeting increased velocity and leveraging FSDP's memory efficiency potential, as explored in Unit 4's comparison of distributed strategies (DDP vs FSDP). Execute experiments on the Ray cluster across 1, 2, and 4 GPUs (subject to availability). Measure training time for fixed epochs (\~50) with a consistent global batch size.
-2.  **Relevant Diagram Parts:** Training Pipeline on Ray Cluster (utilizing multiple GPU workers).
-3.  **Justification:** Addresses potential ResNet-50 memory bottlenecks and accelerates training. Directly leverages insights from Unit 4 regarding FSDP's memory reduction benefits compared to DDP, especially for larger models or constrained memory situations. Fulfills difficulty point by experimentally comparing scaling performance using an advanced distributed technique.
-4.  **Relation to Lecture Material:** Distributed Training Strategies (DDP, FSDP), Scaling (Time/Memory vs #GPUs).
-5.  **Specifics:** Target: ResNet-50 training. Experiment: 1 vs 2 vs 4 GPUs for 50 epochs. Strategy: PyTorch FSDP. Global Batch Size: 256 (example, tune based on memory). Metric: Wall-clock time. Output: Plot time vs. #GPUs. Requires FSDP configuration (wrapping, etc.). Compare time/memory scaling results against Unit 4 observations.
-
-**Requirement 5.1: Experiment Tracking**
-
-1.  **Strategy:** Deploy and manage a **self-hosted MLflow server** on Chameleon. Instrument all training scripts to log parameters, system metrics (GPU util/memory), model metrics (loss, mAP), git commit hashes, and artifacts including model checkpoints and dependencies, utilizing MLflow's comprehensive logging capabilities demonstrated in Unit 5. Leverage **MLflow's UI for visualization** (e.g., plotting GPU utilization against epoch time to identify bottlenecks) and **comparing runs**. Register final candidate models using the **MLflow Model Registry**. Consider Pytorch Lightning autologging if applicable, based on Unit 5 explorations.
-2.  **Relevant Diagram Parts:** Experiment Tracking Server (MLflow) connected to Training Pipeline. Artifact storage linked.
-3.  **Justification:** Meets self-hosted tracking requirement. Enables reproducibility, systematic comparison, and performance debugging (e.g., GPU bottlenecks), leveraging the extensive tracking and UI features of MLflow explored in Unit 5. Essential for organized MLOps.
-4.  **Relation to Lecture Material:** MLflow (Source version logging, Parameter/Metric/Artifact Logging, System Metrics Logging, Visualizations, Model Registry, Autologging, Comparing Runs).
-5.  **Specifics:** 1 self-hosted MLflow instance. Log key parameters/metrics. Utilize visualization and comparison views. Use model registry. Planned experiments: hyperparameter sweeps, model comparisons (ResNet/EffNet/Perch, LoRA vs full), SED impact, ensemble performance.
-
-**Requirement 5.2: Scheduling Training Jobs (Ray Cluster)**
-
-1.  **Strategy:** Use a **Ray cluster** on Chameleon for submitting all training/re-training jobs via Ray Jobs API/CLI. Specify **resource requests (CPU, GPU)** per job, informed by Unit 4 memory findings and Unit 5 explorations of resource allocation and scheduling outcomes. Monitor jobs and cluster state via the **Ray dashboard**. Utilize **Ray Train checkpointing for fault tolerance**, leveraging recovery capabilities explored in Unit 5 to avoid costly restarts upon worker failure.
-2.  **Relevant Diagram Parts:** Ray Cluster (Head, Workers) on Chameleon Infrastructure, executing Training Pipeline jobs.
-3.  **Justification:** Fulfills requirement to use Ray. Leverages Ray's demonstrated capabilities (Unit 5) for scheduling, resource management (including handling infeasible requests, fractional GPUs, simultaneous jobs), monitoring, and fault tolerance, suitable for managing the project's training workload.
-4.  **Relation to Lecture Material:** Ray Framework (Ray Train, Ray Dashboard, Ray Jobs, Resource Management, Scheduling, Fault Tolerance).
-5.  **Specifics:** 1 Ray cluster (e.g., 1 head, 4 GPU workers) on Chameleon. Use Ray Jobs to submit Python scripts. Specify resource requests (CPU/GPU counts). Utilize Ray Train checkpointing. Monitor via Ray dashboard.
+**Difficulty Point: Scheduling hyperparameter tuning jobs** [EffNetB3_FineTune](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/hyperParameterTuneEffNetB3.py) [PannsEmbMLP_FineTune](https://github.com/exploring-curiosity/MLOps/blob/main/model_train/TrainingScripts/hyperParameterTunePannsEmb.py) 
+   - **Ray Tune with ASHA:** Used `hyperParameterTuneEffNetB3.py` and `hyperParameterTunePannsEmb.py`, each instrumented with `tune.report()` and an ASHA scheduler to early‑stop unpromising trials.  
+   - **Submission via API:** Exposed `/tune_effb3` and `/tune_emb_mlp` FastAPI endpoints that call `ray job submit ... python <tune_script> --epochs ... --num_samples ...`.  
+**HELPER NOTEBOOK FOR USING FAST_API SERVER**
+[FastAPI Help Book](FastAPIInferenceEndpoints.ipynb)
 
 #### Model serving and monitoring platforms
 
 This section outlines the plan to satisfy Unit 6 and Unit 7 requirements.
 
-#### Unit 6: Model Serving
+# BirdCLEF Multimodal Audio Classification: Deployment & Evaluation
 
-#### Requirement 6.1: Serving from an API Endpoint
+This project implements, optimizes, and evaluates a multimodal audio classification pipeline for the BirdCLEF dataset. The system combines multiple pre-trained branches to classify 10-second audio clips into one of 206 bird species.
 
-Our strategy involves exposing the final ensemble model (ResNet-50, EfficientNet-B0, and Google Bird Classifier with PANNs features) through a FastAPI endpoint. This API will be deployed on a cloud-based GPU server using a containerized microservice architecture. We support both PyTorch and ONNX runtime endpoints, switching to ONNX for performance-critical deployments. The API accepts base64-encoded `.ogg` audio clips (or extracted Mel spectrograms) and returns a multi-label prediction of species along with confidence scores. This aligns directly with the real-time use case for tour guides and tourists in El Silencio.
+## Model Serving and Evaluation
+##### Model Serving : https://github.com/exploring-curiosity/MLOps/tree/main/model_serving
+### Objective
 
-#### Requirement 6.2: Identify Requirements (Latency, Throughput, Concurrency)
+To build an end-to-end model deployment pipeline that satisfies real-world constraints on model size, latency, and throughput. The project targets both high-performance server deployments and resource-constrained edge devices such as the Raspberry Pi. The system is designed to identify bird species based on their sounds, enabling bioacoustic monitoring and field-based species detection.
 
-Our target requirements are informed by the mobile tour guide use case:
 
-- **Model Size**: ≤ 25MB (with quantized ONNX models).
-- **Latency (Online Inference)**: < 200ms median latency on GPU-based cloud inference, including preprocessing of a 5-second `.ogg` clip.
-- **Throughput (Batch Inference)**: ≥ 200 frames/sec on CPU, ≥ 1000 frames/sec on GPU.
-- **Concurrency**: Support at least 8 concurrent users per node with latency < 300ms (95th percentile).
 
-#### Requirement 6.3: Model Optimizations to Satisfy Requirements
+### Model Architecture
 
-We apply several model-level optimizations:
+The model is a five-branch multimodal fusion pipeline:
 
-- **Graph Optimizations**: Using ONNX Runtime’s extended optimization level.
-- **Quantization**: Applying both dynamic and static post-training quantization with Intel Neural Compressor.
-- **Model Compilation**: TorchScript for PyTorch models and optimized ONNX sessions.
-- **Hardware-Specific Execution Providers**: CUDA (GPU), OpenVINO (CPU), and TensorRT (optimized GPU).
+- EmbeddingClassifier: operates on precomputed audio embeddings  
+- ResNet50: processes mel-augmented spectrograms  
+- EfficientNetB3 with LoRA: processes clean mel spectrograms  
+- RawAudioCNN: operates directly on 10-second denoised waveforms  
+- MetaMLP: fuses the outputs of the above branches and performs final classification  
 
-Each variant is benchmarked on Chameleon cloud nodes. Performance metrics (latency, throughput, model size) are logged to MLflow.
+## Implementation Workflow
 
-#### Requirement 6.4: System Optimizations to Satisfy Requirements
+The focus of this project was exclusively on model serving and evaluation. Below is a detailed overview of the steps taken to deploy the BirdCLEF model and assess its real-world performance across multiple scenarios.
 
-To maintain low latency under concurrent access, we apply system-level strategies using Triton Inference Server:
+### Model Serving
 
-- **Dynamic Batching**: Batch sizes 4–16.
-- **Model Replica Management**: Multiple instances per GPU node.
-- **Resource Monitoring**: `nvidia-smi` and Prometheus-Grafana dashboards.
-- **Prioritized Queuing**: Queue policies to minimize worst-case response times.
 
-#### Extra Difficulty Point: Multiple Options for Serving
+All five PyTorch model branches were converted to ONNX format using carefully designed dummy inputs and compatible opset versions. To ensure the models would be suitable for deployment in both cloud and edge environments, dynamic post-training quantization was applied to each ONNX model to reduce size and improve runtime efficiency. Batch processing configurations were also implemented and tested to maximize throughput and parallelism. Following quantization, the system was evaluated on high-performance hardware for maximum throughput. Using ONNX Runtime on an NVIDIA RTX 6000 GPU, the full fusion pipeline achieved exceptional inference performance with the following results:
 
-To explore cost-performance tradeoffs, we evaluate three deployment configurations:
+- Model size on disk (total): 197.51 MB  
+- Inference latency (single sample): 23.64 ms (median), 26.17 ms (95th percentile), 29.11 ms (99th percentile)  
+- Inference throughput (single sample): 42.70 FPS  
+- Batch throughput: 13,093.65 FPS  
 
-- **Server-grade CPU (AMD EPYC)** with ONNX + OpenVINO backend (target latency < 500ms per clip).
-- **Server-grade GPU (A100)** with ONNX + TensorRT backend (target latency < 200ms per clip).
-- **On-device deployment** with quantized MobileNetV2 (planned for post-project exploration).
+These results demonstrate that the model scales efficiently across batched workloads and performs well under production-like conditions.
 
-We compare accuracy, latency, throughput, and projected cost across these setups to inform production scaling decisions.
+##### Model Serving Notebook : https://github.com/exploring-curiosity/MLOps/blob/main/model_serving/Notebooks/Model_serving.ipynb
 
----
+##### Model Quantization Notebook : https://github.com/exploring-curiosity/MLOps/blob/main/model_serving/Notebooks/ONNX_Optimization.ipynb
 
-#### Unit 7: Evaluation and Monitoring
 
-#### Requirement 7.1: Offline Evaluation of Model
 
-After each training run, we execute an evaluation pipeline that includes:
+### Edge Deployment on Raspberry Pi
 
-1. **Standard Evaluation**: On labeled El Silencio `.ogg` soundscapes.
-2. **Domain-Specific Slices**: Nighttime recordings, low signal-to-noise regions, insect-dominant samples.
-3. **Failure Mode Tests**: Overlapping vocalizations, weak signals, background interference.
-4. **Unit Tests**: Checks for top-K accuracy, coverage, and label frequency.
+Edge deployment was carried out using ONNX Runtime and quantized models optimized for low-latency inference. In this setup, the Raspberry Pi 5 was used to capture live audio from a microphone and wait until the user triggered inference. The recorded audio was then segmented into 10-second chunks to match the model’s expected input length. Each chunk was passed through the preprocessing pipeline and then run through the quantized ONNX model branches locally.
 
-If a model passes the quality bar (e.g., mAP > 0.5), it is registered in MLflow. Failures trigger retraining.
+This setup was designed for efficiency: audio was continuously captured but not processed until the user initiated classification. Once activated, the system performed chunk-wise inference, aggregated predictions, and returned both the predicted class and confidence score per chunk. The latency per chunk remained under 200 ms on-device, making it suitable for responsive field-based bioacoustic classification.
 
-#### Requirement 7.2: Load Test in Staging
+While the default pipeline processes live audio, we also supported inference on pre-saved audio clips during development; by commenting out a few lines, the same system can be toggled between live microphone input and static audio file inference for flexibility during testing and deployment.
 
-The FastAPI + Triton stack is deployed to a staging node. We simulate 8 to 32 users using Python benchmarks and Triton’s `perf_analyzer` to record:
 
-- Median and 95th percentile latency
-- Throughput in predictions/sec
-- GPU and CPU usage trends
+##### Edge Serving Notebook: https://github.com/exploring-curiosity/MLOps/blob/main/model_serving/Edge_Serving/edge_serving.ipynb
 
-This informs autoscaling and concurrency planning.
+### System Optimization
 
-#### Requirement 7.3: Online Evaluation in Canary
+To further improve system throughput and latency, an API endpoint was built using FastAPI to streamline interaction between the model and the inference engine. This API allowed flexible integration with both web-based and local front-end interfaces for inference triggering. Additionally, `config.pbtxt` files were developed for each model branch to define input/output tensor metadata, configure dynamic batching, and control concurrency. Each model instance was pinned to specific GPU devices to balance the load and optimize execution throughput. Concurrency and batching were core elements of the optimization strategy. Batched inference was configured to fully utilize GPU compute capacity by processing multiple audio inputs simultaneously. This was especially beneficial during large-scale evaluation, where multiple chunks or test samples were queued and dispatched in batches, significantly improving throughput.
 
-We simulate different user patterns:
+All components were integrated and validated as part of a cohesive serving pipeline, demonstrating optimal usage of available computational resources.
 
-- **Tour Guide Mode**: Streams 5-second `.ogg` segments.
-- **Power User Mode**: Uploads 1-minute `.ogg` recordings.
-- **Mobile User Mode**: Random upload delays and interruptions.
+#####  App.py  : https://github.com/exploring-curiosity/MLOps/blob/main/model_serving/BirdClassification/fastapi/app.py
 
-Manual inspection of predictions evaluates responsiveness, stability, and correctness. Passing the canary test allows promotion to production.
+### Model Evaluation
 
-#### Requirement 7.4: Close the Loop
+Evaluation was conducted using a combination of offline accuracy testing and domain-specific robustness checks. The primary evaluation used `manifest_test.csv`, which contains the ground truth for standard BirdCLEF test clips. For each audio clip, preprocessed inputs (embedding, mel spectrogram, augmented mel, waveform) were passed to their respective model branches. Outputs were fused via the MetaMLP model to generate final predictions.
 
-We implement real-world feedback mechanisms:
+The evaluation strategy included overall accuracy, per-class accuracy, and identifying the top 20 least accurate classes. Additionally, robustness tests were run on custom folders: `insects/`, `mammalia/`, `amphibia/`, and `sound_similar_to_amphibia/`. These helped identify failure modes and understand model behavior under confusing conditions.
 
-- **User Feedback Hook**: App integration will allow guides to flag wrong predictions.
-- **Passive Feedback Logging**: 5% of queries (and their audio) are saved and periodically labeled to support retraining.
+Visualizations were generated for per-class prediction distributions, confusion matrices, and SHAP-based saliency maps. SHAP was used to analyze which portions of the waveform contributed most to the prediction. Finally, Pytest-based unit tests were written to validate model predictions, pipeline correctness, and I/O integrity under batch inference conditions.
 
-#### Requirement 7.5: Business-Specific Evaluation
+The serving and evaluation pipeline demonstrated high modularity, low latency on GPU, and acceptable performance on edge hardware. The system can be easily extended for real-time streaming or integrated with monitoring frameworks for automated evaluation and deployment.
 
-Our proxy business metric is:
+#### Offline Evaluation
 
-- **Species Diversity per Tour Session**: Number of unique species detected in a single outing.
+Offline evaluation was performed after the model was served, using the `manifest_test.csv` test set to measure accuracy and per-class performance. This allowed the identification of the 20 lowest-performing classes, which provided insight into which species were most frequently misclassified.
 
-Logged per tour, this serves as a proxy for user engagement and tour value.
+Building on this, template-based tests were developed using folders containing species or class-specific samples (e.g., insects, amphibians). These helped evaluate how the model performed on tightly scoped or confusing categories, especially under noisy or overlapping audio conditions.
+
+In addition, explainability techniques such as SHAP were used to interpret what aspects of the audio signal were most influential to the model’s predictions. The SHAP values highlighted important temporal segments and allowed deeper inspection of attention toward certain species. Class-level attribution was derived from this data to help analyze why specific classes were more prone to failure and how certain frequency bands or waveform segments drove model confidence.
+
+##### Offline_eval Notebook : https://github.com/exploring-curiosity/MLOps/blob/main/model_serving/Offline_Evaluation/Offline_eval.ipynb
+
+### Evaluation Strategy
+
+- Evaluated the model using the `manifest_test.csv` test set  
+- Measured overall accuracy, per-class accuracy, and identified the 20 lowest-performing classes  
+- Conducted robustness tests using domain-specific folders: `insects`, `mammalia`, `amphibia`, and `sound_similar_to_amphibia`  
+
+### Analysis Tools
+
+- Applied SHAP to interpret model sensitivity to different portions of the audio waveform  
+- Generated prediction distribution plots, saliency maps, and confusion matrices  
+
+
+### Model Serving and Optimization
+
+- Model served through API endpoint using Triton and FastAPI  
+- Latency and throughput benchmarks collected for batch and online inference  
+- Applied model-level optimizations including quantization and opset tuning  
+- Performed system-level optimizations such as GPU pinning and concurrency tuning  
+
 
 <!-- ## Data pipeline
 
