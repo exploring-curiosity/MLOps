@@ -1,24 +1,21 @@
 name: "meta_mlp_opt"
 platform: "onnxruntime_onnx"
+max_batch_size: 512
 
 input [
-  {
-    name: "fusion_input"
-    data_type: TYPE_FP32
-    dims: [824]
-  }
+  { name: "fusion_input", data_type: TYPE_FP32, dims: [824] }
 ]
 
 output [
-  {
-    name: "meta_output"
-    data_type: TYPE_FP32
-    dims: [206]
-  }
+  { name: "meta_output", data_type: TYPE_FP32, dims: [206] }
 ]
 
-max_batch_size: 128
 dynamic_batching {
-  preferred_batch_size: [32, 64, 128]
-  max_queue_delay_microseconds: 100
+  preferred_batch_size: [128, 256, 512]
+  max_queue_delay_microseconds: 50
 }
+
+instance_group [
+  { count: 2, kind: KIND_GPU, gpus: [0] },
+  { count: 2, kind: KIND_GPU, gpus: [1] }
+]
