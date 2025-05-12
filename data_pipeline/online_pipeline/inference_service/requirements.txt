@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+torch
+torchaudio
+timm
+peft
+librosa
+numpy
+soundfile
