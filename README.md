@@ -484,7 +484,7 @@ terraform init
 
 To follow the project naming conventions and adding the key. Not this is the name of the key followed by the entire team members.
 
-export TF_VAR_suffix=project38
+export TF_VAR_suffix=project38\
 export TF_VAR_key=id_rsa_chameleon_project_g38
 
 We should confirm that our planned configuration is valid:
