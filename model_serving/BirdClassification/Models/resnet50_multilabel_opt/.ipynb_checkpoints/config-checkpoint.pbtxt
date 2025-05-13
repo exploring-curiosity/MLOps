@@ -1,24 +1,20 @@
 name: "resnet50_multilabel_opt"
 platform: "onnxruntime_onnx"
+max_batch_size: 512
 
 input [
-  {
-    name: "mel_aug_input"
-    data_type: TYPE_FP32
-    dims: [1, 64, 313]
-  }
+  { name: "mel_aug_input", data_type: TYPE_FP32, dims: [1, 64, 313] }
 ]
 
 output [
-  {
-    name: "resnet_output"
-    data_type: TYPE_FP32
-    dims: [206]
-  }
+  { name: "resnet_output", data_type: TYPE_FP32, dims: [206] }
 ]
 
-max_batch_size: 128
 dynamic_batching {
-  preferred_batch_size: [32, 64, 128]
-  max_queue_delay_microseconds: 100
+  preferred_batch_size: [128, 256, 512]
+  max_queue_delay_microseconds: 50
 }
+
+instance_group [
+  { count: 4, kind: KIND_GPU, gpus: [0] }
+]
