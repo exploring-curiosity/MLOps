@@ -288,14 +288,35 @@ Notebook link: [Offline Evaluation Notebook](https://github.com/exploring-curios
 
 ---
 
-### Load Testing in Staging
-A load test is conducted in the staging environment as part of the continuous deployment pipeline. The test simulates high-throughput inference using concurrent audio samples to evaluate:
+### Load Testing in Staging Environment
 
-- API stability under stress
-- Latency scaling with batch size
-- System resource utilization under load
+As part of the continuous deployment pipeline, a **load test** is executed in the staging environment to assess the system’s performance under high-throughput inference scenarios. The primary objectives of this test include:
 
-Metrics from this load test are collected via Prometheus and visualized in Grafana dashboards.
+- **API Stability Under Stress**  
+  Evaluating the robustness and fault tolerance of the inference API when subjected to sustained concurrent requests using real audio samples.
+
+- **Latency Scaling with Batch Size**  
+  Measuring how inference latency evolves with increasing batch sizes, helping identify optimal configurations for throughput versus response time trade-offs.
+
+- **System Resource Utilization**  
+  Monitoring CPU, GPU, memory, and I/O usage during peak load conditions to ensure efficient resource allocation and identify potential bottlenecks.
+
+The test is driven using `perf_analyzer`, a tool provided by NVIDIA Triton Inference Server, which simulates parallel requests and varying concurrency levels.
+
+## Observability
+
+- **Metrics Collection**  
+  All relevant performance metrics—such as request latency, throughput, error rates, and GPU utilization—are scraped using **Prometheus**.
+
+- **Visualization**  
+  The metrics are displayed on custom **Grafana dashboards**, enabling real-time monitoring and post-test analysis. Dashboards include:
+  - Inference latency over time
+  - Throughput vs. batch size
+  - GPU memory and compute utilization
+  - API error rate and request distribution
+
+This load testing stage ensures that the deployed model infrastructure meets production requirements in terms of scalability, reliability, and performance.
+
 
 ---
 
@@ -328,36 +349,71 @@ To close the evaluation loop, the following mechanisms are implemented:
 ---
 
 ### Business-Specific Evaluation Plan
-In a real deployment scenario, this system would support conservation research and bioacoustic monitoring. The proposed business-specific metrics include:
+### Business Metric: Species Spotting Rate
 
-- **Species Detection Accuracy**: Measured over time to track biodiversity across locations  
-- **False Positive Rate**: Critical for rare or endangered species  
-- **Model Response Time**: Threshold of 250ms for field operability  
-- **Species Coverage**: Ratio of species detected to regional species checklist  
+**Definition**  
+The **Species Spotting Rate** represents the average number of unique bird species identified during a tourist’s visit using AI-enhanced tools such as guided audio trails, mobile apps, or smart signage.
 
-In production, these would be measured using a combination of GPS-tagged field recorders, expert review, and real-time metadata ingestion from deployed devices.
+**Formula (Conceptual)**  
+\[
+\text{Species Spotting Rate} = \frac{\text{Total Unique Species Detected}}{\text{Number of Visitors or Sessions}}
+\]
+
+**Purpose**  
+This metric measures the **biodiversity exposure per visitor experience**, providing insight into how rich, informative, and engaging the eco-tourism encounter is from a biological perspective.
+
+**Business Relevance**  
+- Helps quantify the **value of biodiversity** offered to tourists.
+- Correlates with visitor satisfaction, reviews, and repeat visits.
+- Enables benchmarking across trails, seasons, or locations.
+
+**Application in Eco-Tourism**  
+- Used to **optimize trail designs** by identifying high-density acoustic zones.
+- Enables dynamic storytelling — e.g., “Spot 15 species in 30 minutes!”
+- Forms a key part of **visitor experience analytics** in dashboards.
+
+**Example**  
+A guided trail with real-time audio classification detects 22 unique species across 10 tourist sessions.  
+→ **Species Spotting Rate** = 22 / 10 = **2.2 species per visit**
+
 
 ---
 
 ### Advanced Monitoring (Extended Features)
 
-#### Monitoring for Data and Label Drift
-A drift detection module is deployed to monitor input data and label distribution changes. Key components include:
 
-- **Embedding-based drift detection** using cosine similarity and PCA  
-- **Concept drift monitoring** using statistical summaries of audio features  
-- Alerts are surfaced through a Prometheus + Grafana dashboard.
+### Monitoring for Model Degradation and System Health
 
-Drift module source: [`cd_online.py`](https://github.com/exploring-curiosity/MLOps/blob/main/model_serving/DriftMonitoring/cd_online.py)
+The production inference system is monitored using Grafana dashboards that visualize both API behavior and model output metrics. These dashboards are powered by Prometheus metrics scraped from FastAPI and Triton Inference Server.
 
-#### Monitoring for Model Degradation
-Model performance metrics such as accuracy, class entropy, and confidence variance are tracked in production. Alerts are triggered when degradation is detected.
+#### Metrics Monitored
 
-- **Automatic retraining triggers** based on degradation thresholds  
-- **Evaluation fallback** on a safe, previously registered model version  
-- Integrated with MLflow and Prometheus for full observability and lifecycle tracking
+**Model Inference Metrics**
+- **Average Prediction Confidence**
+- **Prediction Confidence Histogram** (over time)
+- **Confidence Distribution** (bucketed ranges from ≤0.1 to ≤1.0)
 
-Dashboard and alerting system enables rapid response by engineers and researchers.
+**API Behavior**
+- **Request Volume** per second (grouped by status: 2xx, 4xx, 5xx)
+- **Error Rates** over time
+- **Request Duration Percentiles**: median, 95th, and 99th percentiles
+- **Average Latency** for `/predict` endpoint
+
+**System Metrics** (via cAdvisor)
+- CPU usage, memory usage, I/O rates for each container
+
+#### Grafana Alerting 
+
+- Alerts are defined directly in Grafana panels based on:
+  - Drop in average confidence
+  - Spike in latency (e.g., 95th percentile > 1 sec)
+  - Surge in 4xx/5xx error rates
+- Alert delivery options:
+  - Email
+
+
+
+
 
 ---
 
