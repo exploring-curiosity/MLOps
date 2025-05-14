@@ -1,0 +1,32 @@
+version: "3.8"
+
+volumes:
+  birdclef_data:
+    external: true
+
+services:
+  init-data:
+    image: python:3.11
+    volumes:
+      - birdclef_data:/data
+    working_dir: /data
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        echo "Installing gdown..."
+        pip install --no-cache-dir gdown
+
+        echo "Creating BirdCLEF data directory..."
+        mkdir -p /data/BirdCLEF && cd /data/BirdCLEF
+
+        echo "Downloading dataset from Google Drive..."
+        gdown --id 1w7mTNbrdxJ9YbqC10DJRYiD0YG95q97z -O birdclef_dataset.zip
+
+        echo "Extracting dataset..."
+        unzip -q birdclef_dataset.zip
+        rm birdclef_dataset.zip
+
+        echo "BirdCLEF dataset is ready at /data/BirdCLEF/"
+    restart: "no"
