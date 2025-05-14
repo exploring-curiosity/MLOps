@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Results</title>
+</head>
+<body>
+    <h2>Prediction Results</h2>
+
+    {% for item in predictions %}
+        <h4>{{ item.filename or "Unknown File" }}</h4>
+
+        {% if item.error %}
+            <p style="color:red;">Error: {{ item.error }}</p>
+        {% else %}
+            <p><strong>Predicted Label:</strong> {{ item.predicted_label }}</p>
+            <p><strong>Confidence:</strong> {{ item.probability }}</p>
+            <p><strong>Total Latency:</strong> {{ item.latency_ms }} ms</p>
+        {% endif %}
+        <hr>
+    {% endfor %}
+
+    <a href="/upload">Upload more</a>
+</body>
+</html>
