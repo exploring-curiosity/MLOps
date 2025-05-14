@@ -20,7 +20,7 @@ services:
         mkdir -p /data/BirdCLEF-2025 && cd /data/BirdCLEF-2025
 
         echo "Downloading BirdCLEF dataset from Google Drive..."
-        gdown --id 1w7mTNbrdxJ9YbqC10DJRYiD0YG95q97z -O birdclef_dataset.zip
+        gdown --id   1XiBB-EyeeD41sklEf2MGKwWxBZkslcoA -O birdclef_dataset.zip
 
         echo "Extracting dataset..."
         unzip -q birdclef_dataset.zip
