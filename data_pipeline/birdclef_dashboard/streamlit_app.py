@@ -238,31 +238,31 @@ if os.path.exists(manifest_path):
     else:
         st.warning(f"⚠️ Missing mel file: {mel_path}")
 
-    # 📊 Embedding Predictions
-    st.subheader("📊 Predicted Labels from Embeddings")
-    emb_path = os.path.join(FEATURES_DIR, "embeddings", row["emb_path"].lstrip("/"))
-    if os.path.exists(emb_path):
-        probs_data = np.load(emb_path, allow_pickle=True)
-        if isinstance(probs_data, np.lib.npyio.NpzFile):
-            probs = probs_data[list(probs_data.files)[0]]
-        else:
-            probs = probs_data
+    # # 📊 Embedding Predictions
+    # st.subheader("📊 Predicted Labels from Embeddings")
+    # emb_path = os.path.join(FEATURES_DIR, "embeddings", row["emb_path"].lstrip("/"))
+    # if os.path.exists(emb_path):
+    #     probs_data = np.load(emb_path, allow_pickle=True)
+    #     if isinstance(probs_data, np.lib.npyio.NpzFile):
+    #         probs = probs_data[list(probs_data.files)[0]]
+    #     else:
+    #         probs = probs_data
 
-        species = taxonomy.set_index("primary_label")["common_name"].to_dict()
-        labels = [species.get(i, f"Species {i}") for i in range(len(probs.flatten()))]
+    #     species = taxonomy.set_index("primary_label")["common_name"].to_dict()
+    #     labels = [species.get(i, f"Species {i}") for i in range(len(probs.flatten()))]
 
-        min_len = min(len(labels), len(probs.flatten()))
-        pred_df = pd.DataFrame({
-            "Species": labels[:min_len],
-            "Probability": probs.flatten()[:min_len]
-        })
-        pred_df = pred_df.sort_values("Probability", ascending=False)
-        primary = pred_df.iloc[0]
-        st.code(f"🔍 Raw Primary Label Index: {pred_df.index[0]}, Species: {primary['Species']}, Probability: {primary['Probability']:.4f}")
-        secondary = pred_df[pred_df["Probability"] > 0.5].iloc[1:]
+    #     min_len = min(len(labels), len(probs.flatten()))
+    #     pred_df = pd.DataFrame({
+    #         "Species": labels[:min_len],
+    #         "Probability": probs.flatten()[:min_len]
+    #     })
+    #     pred_df = pred_df.sort_values("Probability", ascending=False)
+    #     primary = pred_df.iloc[0]
+    #     st.code(f"🔍 Raw Primary Label Index: {pred_df.index[0]}, Species: {primary['Species']}, Probability: {primary['Probability']:.4f}")
+    #     secondary = pred_df[pred_df["Probability"] > 0.5].iloc[1:]
 
-        st.markdown(f"**Primary Prediction:** {primary['Species']} ({primary['Probability']:.2f})")
-        st.markdown(f"**Secondary Labels (>0.5):**")
-        st.dataframe(secondary.reset_index(drop=True))
-    else:
-        st.warning(f"⚠️ Missing embedding file: {emb_path}")
+    #     st.markdown(f"**Primary Prediction:** {primary['Species']} ({primary['Probability']:.2f})")
+    #     st.markdown(f"**Secondary Labels (>0.5):**")
+    #     st.dataframe(secondary.reset_index(drop=True))
+    # else:
+    #     st.warning(f"⚠️ Missing embedding file: {emb_path}")
