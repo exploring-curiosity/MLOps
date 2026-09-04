@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+testpaths = ["data_pipeline"]
+norecursedirs = [
+    "continous_X_pipeline/ansible/k8s/kubespray",
+    "*/lib/python3.11/site-packages",
+    "node_modules",
+]

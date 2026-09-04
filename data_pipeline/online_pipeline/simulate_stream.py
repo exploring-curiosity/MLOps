@@ -1,9 +1,9 @@
 import os, time, random
 from pydub import AudioSegment
 
-BACKGROUND_DIR = "/mnt/persist/train_soundscapes"
-CALLS_DIR = "/mnt/persist/train_audio"
-OUTPUT_DIR = "/mnt/persist/online_input"
+BACKGROUND_DIR = os.getenv("BACKGROUND_DIR", "./tmp/train_soundscapes")
+CALLS_DIR = os.getenv("CALLS_DIR", "./tmp/train_audio")
+OUTPUT_DIR = os.getenv("OUTPUT_DIR", "./tmp/online_input")
 INTERVAL = 10  # seconds
 OVERLAY_PROB = 0.3  # 30% chance to overlay a bird call
 
