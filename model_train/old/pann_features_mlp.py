@@ -5,6 +5,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import Dataset, DataLoader
 import pytorch_lightning as L # Use 'lightning' if using v2.0+
 from pytorch_lightning.loggers import CSVLogger
