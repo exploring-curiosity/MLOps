@@ -243,7 +243,7 @@ class BirdEmbeddingDataModule(L.LightningDataModule):
             species_to_int = {s: i for i, s in enumerate(species_list)}
             def parse_labels(l_str):
                 try: return [str(l) for l in ast.literal_eval(l_str) if str(l) in species_list]
-                except: return []
+                except Exception: return []
 
             full_train_df['primary_label_str'] = full_train_df['primary_label'].astype(str)
             full_train_df['secondary_labels_list'] = full_train_df['secondary_labels'].apply(parse_labels)
